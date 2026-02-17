@@ -15,14 +15,13 @@ class LogResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            "id" => $this->id,
-            "frequency" => $this->frequency,
-            "10_28" => $this->ncs_1028,
-            "waktu" => $this->waktu,
-            "zzd" => $this->zzd,
-            "nama" => $this->nama,
-            "keterangan" => $this->keterangan,
-            "dibuat_pada" => $this->created_at->format('d-m-Y H:i'),
+            "id"          => $this->id,
+            "frequency"   => $this->frequency,
+            "ncs_1028"    => $this->ncs_1028,
+            "waktu"       => $this->created_at->format('d-m-Y H:i'),
+            "zzd"         => $this->zzd,
+            "nama"        => $this->nama,
+            "keterangan"  => $this->keterangan,
         ];
     }
 }

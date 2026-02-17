@@ -22,9 +22,8 @@ class LogRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "frequency" => "required|max:20",
-            "ncs_1028" => "required|max:7",
-            "waktu" => "required|max:20",
+            "frequency" => "required|string|max:20",
+            "ncs_1028" => "required|string|max:10",
             "zzd" => "nullable|string|max:10",
             "nama" => "nullable|string|max:100",
             "keterangan" => "nullable|string"

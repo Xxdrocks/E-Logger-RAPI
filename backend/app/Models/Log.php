@@ -11,9 +11,15 @@ class Log extends Model
     protected $fillable = [
         'frequency',
         'ncs_1028',
-        'waktu',
         'zzd',
         'nama',
         'keterangan'
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'created_at' => 'datetime',
+        ];
+    }
 }

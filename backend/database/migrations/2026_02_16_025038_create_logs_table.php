@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('frequency')->index();
             $table->string('ncs_1028')->index();
-            $table->string('waktu');
             $table->string('zzd')->nullable();
             $table->string('nama')->nullable()->index();
             $table->text('keterangan')->nullable();
