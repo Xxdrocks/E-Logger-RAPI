@@ -18,3 +18,4 @@ class LogsExport implements FromCollection, WithHeadings
         return ['FREQ', '10/28', 'ZZD', 'NAMA', 'KETERANGAN'];
     }
 }
+

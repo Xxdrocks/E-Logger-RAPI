@@ -26,7 +26,9 @@ class LogRequest extends FormRequest
             "ncs_1028" => "required|string|max:10",
             "zzd" => "nullable|string|max:10",
             "nama" => "nullable|string|max:100",
-            "keterangan" => "nullable|string"
+            "keterangan" => "nullable|string",
+            "pencatat_ncs"   => "required|string|max:20",
+            "pencatat_nama"  => "nullable|string|max:100",
         ];
     }
 }

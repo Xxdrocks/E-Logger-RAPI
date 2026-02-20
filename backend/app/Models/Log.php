@@ -13,7 +13,9 @@ class Log extends Model
         'ncs_1028',
         'zzd',
         'nama',
-        'keterangan'
+        'keterangan',
+        'pencatat_ncs',
+        'pencatat_nama'
     ];
 
     protected function casts(): array
