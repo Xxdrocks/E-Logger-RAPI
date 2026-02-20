@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('zzd')->nullable();
             $table->string('nama')->nullable()->index();
             $table->text('keterangan')->nullable();
+            $table->string('pencatat_ncs')->nullable();
+            $table->string('pencatat_nama')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

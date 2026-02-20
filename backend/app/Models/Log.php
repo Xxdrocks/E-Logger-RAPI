@@ -15,7 +15,7 @@ class Log extends Model
         'nama',
         'keterangan',
         'pencatat_ncs',
-        'pencatat_nama'
+        'pencatat_nama',
     ];
 
     protected function casts(): array

@@ -78,9 +78,9 @@ function LogPage() {
                             </div>
                             <div>
                                 <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 leading-tight tracking-tight">
-                                    E-Logger System
+                                    E-Logger RAPI
                                 </h1>
-                                <p className="text-slate-500 text-sm mt-0.5">Sistem Pencatatan Log Radio</p>
+                                <p className="text-slate-500 text-sm mt-0.5">Sistem pencatat Log Rapi</p>
                             </div>
                         </div>
 

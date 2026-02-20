@@ -1,12 +1,12 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 
 function LogForm({ refresh, session, setSession }) {
-    const [sessionDraft, setSessionDraft] = useState({
-        frequency: '',
-        keterangan: '',
-        pencatat_ncs: '',
-        pencatat_nama: ''
+    const [sessionDraft, setSessionDraft] = useState({ 
+        frequency: '', 
+        keterangan: '', 
+        pencatat_ncs: '', 
+        pencatat_nama: '' 
     });
     const [ncs, setNcs] = useState('');
     const [suggestions, setSuggestions] = useState([]);
@@ -15,11 +15,9 @@ function LogForm({ refresh, session, setSession }) {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [editSession, setEditSession] = useState(false);
-
+    
     const [pencatatSuggestions, setPencatatSuggestions] = useState([]);
     const [showPencatatSuggestions, setShowPencatatSuggestions] = useState(false);
-    const ncsRef = useRef(null);
-    const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 });
 
     const extractZzd = (ncs) => {
         if (!ncs || ncs.length < 4) return '';
@@ -65,14 +63,6 @@ function LogForm({ refresh, session, setSession }) {
         if (value.length >= 2) {
             try {
                 const res = await axios.get(`http://127.0.0.1:8000/api/logs/search-ncs?q=${value}`);
-                if (ncsRef.current) {
-                    const rect = ncsRef.current.getBoundingClientRect();
-                    setDropdownPos({
-                        top: rect.bottom + 4,
-                        left: rect.left,
-                        width: rect.width,
-                    });
-                }
                 setSuggestions(res.data);
                 setShowSuggestions(true);
             } catch (err) {
@@ -81,6 +71,21 @@ function LogForm({ refresh, session, setSession }) {
         } else {
             setSuggestions([]);
             setShowSuggestions(false);
+        }
+    };
+
+    const handleNcsKeyDown = async (e) => {
+        if (e.key === 'Enter' && ncs && !selectedOperator) {
+            e.preventDefault();
+            try {
+                const res = await axios.get(`http://127.0.0.1:8000/api/logs/search-ncs?q=${ncs}`);
+                const exactMatch = res.data.find(op => op.ncs.toLowerCase() === ncs.toLowerCase());
+                if (exactMatch) {
+                    handleSelectSuggestion(exactMatch);
+                }
+            } catch (err) {
+                console.error(err);
+            }
         }
     };
 
@@ -292,43 +297,33 @@ function LogForm({ refresh, session, setSession }) {
                                     🔢 10/28
                                 </label>
                                 <input
-                                    ref={ncsRef}
                                     placeholder="Ketik NCS... contoh: VAG"
                                     value={ncs}
                                     onChange={handleNcsChange}
+                                    onKeyDown={handleNcsKeyDown}
                                     onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
                                     onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-slate-800 text-sm placeholder:text-slate-300 outline-none transition-all duration-200 focus:border-indigo-400 focus:bg-white focus:ring-2 focus:ring-indigo-100"
                                     autoFocus
                                 />
+                                {showSuggestions && suggestions.length > 0 && (
+                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-indigo-200 rounded-xl shadow-2xl z-[9999] overflow-hidden">
+                                        {suggestions.map((op) => (
+                                            <div
+                                                key={op.ncs}
+                                                onPointerDown={(e) => {
+                                                    e.preventDefault();
+                                                    handleSelectSuggestion(op);
+                                                }}
+                                                className="flex items-center justify-between px-3.5 py-2.5 cursor-pointer hover:bg-indigo-50 border-b border-slate-50 last:border-b-0 transition-colors duration-100"
+                                            >
+                                                <span className="font-bold text-indigo-600 font-mono text-sm">{op.ncs}</span>
+                                                <span className="text-slate-400 text-xs">{op.nama}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                             </div>
-
-                            {showSuggestions && suggestions.length > 0 && (
-                                <div
-                                    style={{
-                                        position: 'fixed',
-                                        top: dropdownPos.top,
-                                        left: dropdownPos.left,
-                                        width: dropdownPos.width,
-                                        zIndex: 99999,
-                                    }}
-                                    className="bg-white border border-indigo-200 rounded-xl shadow-2xl overflow-hidden"
-                                >
-                                    {suggestions.map((op) => (
-                                        <div
-                                            key={op.ncs}
-                                            onPointerDown={(e) => {
-                                                e.preventDefault();
-                                                handleSelectSuggestion(op);
-                                            }}
-                                            className="flex items-center justify-between px-3.5 py-2.5 cursor-pointer hover:bg-indigo-50 border-b border-slate-50 last:border-b-0 transition-colors duration-100"
-                                        >
-                                            <span className="font-bold text-indigo-600 font-mono text-sm">{op.ncs}</span>
-                                            <span className="text-slate-400 text-xs">{op.nama}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
 
                             {selectedOperator && (
                                 <div className="flex flex-col gap-1.5 flex-1">
