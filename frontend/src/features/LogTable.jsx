@@ -44,7 +44,7 @@ function LogTable({ logs = [], refresh, session }) {
         <div className="bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-xl shadow-slate-200/60 overflow-hidden">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-7 py-5 border-b border-slate-100">
                 <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center shadow-md shadow-slate-300">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-md shadow-primary/30">
                         <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                         </svg>
@@ -72,7 +72,7 @@ function LogTable({ logs = [], refresh, session }) {
 
                     <button
                         onClick={handleExport}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 text-sm font-semibold hover:bg-emerald-100 hover:border-emerald-300 transition-all duration-200"
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-light text-primary border border-primary text-sm font-semibold hover:bg-primary-hover hover:text-white transition-all duration-200"
                     >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -112,9 +112,9 @@ function LogTable({ logs = [], refresh, session }) {
                             </tr>
                         ) : (
                             logs.map((log) => (
-                                <tr key={log.id} className="group hover:bg-indigo-50/40 transition-colors duration-150">
+                                <tr key={log.id} className="group hover:bg-primary-light/40 transition-colors duration-150">
                                     <td className="px-5 py-3.5">
-                                        <span className="inline-flex items-center gap-1.5 font-mono font-semibold text-indigo-700 bg-indigo-50 border border-indigo-100 px-2.5 py-0.5 rounded-lg text-xs">
+                                        <span className="inline-flex items-center gap-1.5 font-mono font-semibold text-primary bg-primary-light border border-primary px-2.5 py-0.5 rounded-lg text-xs">
                                             📡 {log.frequency ?? "-"}
                                         </span>
                                     </td>
@@ -133,7 +133,7 @@ function LogTable({ logs = [], refresh, session }) {
                                     </td>
                                     <td className="px-5 py-3.5">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-sky-400 to-indigo-500 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
+                                            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-secondary to-primary flex items-center justify-center text-white text-[10px] font-bold shrink-0">
                                                 {(log.nama ?? "?")[0].toUpperCase()}
                                             </div>
                                             <span className="text-slate-700 font-semibold text-xs">{log.nama ?? "-"}</span>
@@ -175,7 +175,7 @@ function LogTable({ logs = [], refresh, session }) {
                     </p>
                     <div className="flex gap-1">
                         {[...Array(Math.min(3, Math.ceil(logs.length / 10)))].map((_, i) => (
-                            <div key={i} className={`w-1.5 h-1.5 rounded-full ${i === 0 ? "bg-indigo-500" : "bg-slate-300"}`} />
+                            <div key={i} className={`w-1.5 h-1.5 rounded-full ${i === 0 ? "bg-primary" : "bg-slate-300"}`} />
                         ))}
                     </div>
                 </div>

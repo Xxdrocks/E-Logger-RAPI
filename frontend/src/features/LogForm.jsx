@@ -132,7 +132,7 @@ function LogForm({ refresh, session, setSession }) {
             {(!session || editSession) && (
                 <div className="p-7">
                     <div className="flex items-center gap-3 mb-6 pb-5 border-b border-slate-100">
-                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-md shadow-emerald-200 shrink-0">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-md shadow-primary/20">
                             <svg width="16" height="16" fill="none" stroke="white" strokeWidth="2.2" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -157,7 +157,7 @@ function LogForm({ refresh, session, setSession }) {
                                     placeholder="Contoh: 175.200"
                                     value={sessionDraft.frequency}
                                     onChange={(e) => setSessionDraft({ ...sessionDraft, frequency: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-slate-800 text-sm placeholder:text-slate-300 outline-none transition-all duration-200 focus:border-emerald-400 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-slate-800 text-sm placeholder:text-slate-300 outline-none transition-all duration-200 focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary-light"
                                     required
                                 />
                             </div>
@@ -173,11 +173,11 @@ function LogForm({ refresh, session, setSession }) {
                                     onChange={handlePencatatNcsChange}
                                     onFocus={() => { if (pencatatSuggestions.length > 0) setShowPencatatSuggestions(true); }}
                                     onBlur={() => setTimeout(() => setShowPencatatSuggestions(false), 200)}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-slate-800 text-sm placeholder:text-slate-300 outline-none transition-all duration-200 focus:border-emerald-400 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-slate-800 text-sm placeholder:text-slate-300 outline-none transition-all duration-200 focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary-light"
                                     required
                                 />
                                 {showPencatatSuggestions && pencatatSuggestions.length > 0 && (
-                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-emerald-200 rounded-xl shadow-2xl z-50 overflow-hidden">
+                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-primary rounded-xl shadow-2xl z-50 overflow-hidden">
                                         {pencatatSuggestions.map((op) => (
                                             <div
                                                 key={op.ncs}
@@ -185,9 +185,9 @@ function LogForm({ refresh, session, setSession }) {
                                                     e.preventDefault();
                                                     handleSelectPencatat(op);
                                                 }}
-                                                className="flex items-center justify-between px-3.5 py-2.5 cursor-pointer hover:bg-emerald-50 border-b border-slate-50 last:border-b-0 transition-colors duration-100"
+                                                className="flex items-center justify-between px-3.5 py-2.5 cursor-pointer hover:bg-primary-light border-b border-slate-50 last:border-b-0 transition-colors duration-100"
                                             >
-                                                <span className="font-bold text-emerald-600 font-mono text-sm">{op.ncs}</span>
+                                                <span className="font-bold text-primary font-mono text-sm">{op.ncs}</span>
                                                 <span className="text-slate-400 text-xs">{op.nama}</span>
                                             </div>
                                         ))}
@@ -217,7 +217,7 @@ function LogForm({ refresh, session, setSession }) {
                                     placeholder="Contoh: Check in pagi"
                                     value={sessionDraft.keterangan}
                                     onChange={(e) => setSessionDraft({ ...sessionDraft, keterangan: e.target.value })}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-slate-800 text-sm placeholder:text-slate-300 outline-none transition-all duration-200 focus:border-emerald-400 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-slate-800 text-sm placeholder:text-slate-300 outline-none transition-all duration-200 focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary-light"
                                 />
                             </div>
                         </div>
@@ -233,7 +233,7 @@ function LogForm({ refresh, session, setSession }) {
                             )}
                             <button
                                 type="submit"
-                                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-sm font-semibold shadow-md shadow-emerald-200 hover:shadow-lg hover:shadow-emerald-300 hover:-translate-y-0.5 transition-all duration-200"
+                                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-white text-sm font-semibold shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-200"
                             >
                                 <svg width="14" height="14" fill="none" stroke="white" strokeWidth="2.2" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -247,16 +247,16 @@ function LogForm({ refresh, session, setSession }) {
 
             {session && !editSession && (
                 <>
-                    <div className="flex items-center justify-between px-7 py-4 bg-emerald-50/60 border-b border-emerald-100">
+                    <div className="flex items-center justify-between px-7 py-4 bg-primary-light/60 border-b border-primary/10">
                         <div className="flex items-center gap-3">
-                            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-md shadow-emerald-300 animate-pulse" />
+                            <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-md shadow-primary/30 animate-pulse" />
                             <div className="flex items-center gap-2 flex-wrap">
                                 <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Sesi Aktif</span>
-                                <span className="inline-flex items-center gap-1.5 bg-white border border-emerald-200 text-emerald-700 font-bold font-mono text-xs px-3 py-1 rounded-lg shadow-sm">
+                                <span className="inline-flex items-center gap-1.5 bg-white border border-primary text-primary font-bold font-mono text-xs px-3 py-1 rounded-lg shadow-sm">
                                     <img src="/images/logger.png" alt="Frequency" className="w-3 h-3 object-contain" />
                                     {session.frequency}
                                 </span>
-                                <span className="inline-flex items-center gap-1.5 bg-white border border-teal-200 text-teal-700 font-bold font-mono text-xs px-3 py-1 rounded-lg shadow-sm">
+                                <span className="inline-flex items-center gap-1.5 bg-white border border-secondary text-secondary font-bold font-mono text-xs px-3 py-1 rounded-lg shadow-sm">
                                     <img src="/images/ncspencatat.png" alt="NCS Pencatat" className="w-3 h-3 object-contain" />
                                     {session.pencatat_ncs}
                                 </span>
@@ -270,7 +270,7 @@ function LogForm({ refresh, session, setSession }) {
                         </div>
                         <button
                             onClick={() => { setEditSession(true); setSessionDraft({ ...session }); }}
-                            className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-emerald-600 transition-colors duration-150"
+                            className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-primary transition-colors duration-150"
                         >
                             <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -281,13 +281,13 @@ function LogForm({ refresh, session, setSession }) {
 
                     <form onSubmit={handleSubmit} className="p-7 relative">
                         {success && (
-                            <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-emerald-500 text-white text-sm font-semibold px-5 py-2 rounded-full shadow-lg whitespace-nowrap">
+                            <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-primary text-white text-sm font-semibold px-5 py-2 rounded-full shadow-lg whitespace-nowrap">
                                 <span>✓</span> Log berhasil disimpan!
                             </div>
                         )}
 
                         <div className="flex items-center gap-3 mb-5 pb-4 border-b border-slate-100">
-                            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-teal-500 to-emerald-600 flex items-center justify-center shadow-md shadow-emerald-200 shrink-0">
+                            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-secondary to-primary flex items-center justify-center shadow-md shadow-primary/20">
                                 <svg width="16" height="16" fill="none" stroke="white" strokeWidth="2.2" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                                 </svg>
@@ -311,11 +311,11 @@ function LogForm({ refresh, session, setSession }) {
                                     onKeyDown={handleNcsKeyDown}
                                     onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
                                     onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-slate-800 text-sm placeholder:text-slate-300 outline-none transition-all duration-200 focus:border-emerald-400 focus:bg-white focus:ring-2 focus:ring-emerald-100"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-slate-800 text-sm placeholder:text-slate-300 outline-none transition-all duration-200 focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary-light"
                                     autoFocus
                                 />
                                 {showSuggestions && suggestions.length > 0 && (
-                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-emerald-200 rounded-xl shadow-2xl z-[9999] overflow-hidden">
+                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-primary rounded-xl shadow-2xl z-[9999] overflow-hidden">
                                         {suggestions.map((op) => (
                                             <div
                                                 key={op.ncs}
@@ -323,9 +323,9 @@ function LogForm({ refresh, session, setSession }) {
                                                     e.preventDefault();
                                                     handleSelectSuggestion(op);
                                                 }}
-                                                className="flex items-center justify-between px-3.5 py-2.5 cursor-pointer hover:bg-emerald-50 border-b border-slate-50 last:border-b-0 transition-colors duration-100"
+                                                className="flex items-center justify-between px-3.5 py-2.5 cursor-pointer hover:bg-primary-light border-b border-slate-50 last:border-b-0 transition-colors duration-100"
                                             >
-                                                <span className="font-bold text-emerald-600 font-mono text-sm">{op.ncs}</span>
+                                                <span className="font-bold text-primary font-mono text-sm">{op.ncs}</span>
                                                 <span className="text-slate-400 text-xs">{op.nama}</span>
                                             </div>
                                         ))}
@@ -339,8 +339,8 @@ function LogForm({ refresh, session, setSession }) {
                                         <img src="/images/namapencatat.png" alt="Nama" className="w-3.5 h-3.5 object-contain" />
                                         Nama
                                     </label>
-                                    <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-emerald-200 bg-emerald-50/60 text-emerald-700 text-sm font-semibold">
-                                        <div className="w-5 h-5 rounded-full bg-gradient-to-br from-teal-400 to-emerald-500 flex items-center justify-center text-white text-[10px] font-bold shrink-0">
+                                    <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-primary bg-primary-light/60 text-primary text-sm font-semibold">
+                                        <div className="w-5 h-5 rounded-full bg-gradient-to-br from-secondary to-primary flex items-center justify-center text-white text-[10px] font-bold shrink-0">
                                             {selectedOperator.nama[0].toUpperCase()}
                                         </div>
                                         {selectedOperator.nama}
@@ -351,7 +351,7 @@ function LogForm({ refresh, session, setSession }) {
                             <button
                                 type="submit"
                                 disabled={loading || !ncs}
-                                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-teal-500 to-emerald-600 text-white text-sm font-semibold shadow-md shadow-emerald-200 hover:shadow-lg hover:shadow-emerald-300 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 whitespace-nowrap"
+                                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-secondary to-primary text-white text-sm font-semibold shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 whitespace-nowrap"
                             >
                                 {loading ? (
                                     <>
