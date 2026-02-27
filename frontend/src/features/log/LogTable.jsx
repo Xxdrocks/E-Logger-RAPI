@@ -114,8 +114,8 @@ function LogTable({ logs = [], refresh, session }) {
                             logs.map((log) => (
                                 <tr key={log.id} className="group hover:bg-primary-light/40 transition-colors duration-150">
                                     <td className="px-5 py-3.5">
-                                        <span className="inline-flex items-center gap-1.5 font-mono font-semibold text-primary bg-primary-light border border-primary px-2.5 py-0.5 rounded-lg text-xs">
-                                            📡 {log.frequency ?? "-"}
+                                        <span className="inline-flex items-center gap-1.5 font-mono font-semibold text-primary px-2.5 py-0.5 rounded-lg text-xs">
+                                            <img src="/images/frequency.png" alt="logger" className="w-4 h-4" /> {log.frequency ?? "-"}
                                         </span>
                                     </td>
                                     <td className="px-5 py-3.5">

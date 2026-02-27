@@ -25,8 +25,8 @@ function Navbar() {
                                 className={`
                                     relative px-8 py-3 rounded-full text-sm font-semibold transition-all duration-300
                                     ${active === item.path
-                                        ? 'bg-white text-indigo-600 shadow-lg shadow-indigo-100'
-                                        : 'text-indigo-800/70 hover:text-indigo-900 hover:bg-white/50'
+                                        ? 'bg-white text-primary shadow-lg shadow-indigo-100'
+                                        : 'text-primary/70 hover:text-primary hover:bg-white/50'
                                     }
                                 `}
                             >

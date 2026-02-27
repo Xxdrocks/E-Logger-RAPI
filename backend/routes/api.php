@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\LogController;
+use App\Http\Controllers\Api\ScheduleController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -10,6 +11,7 @@ Route::post('/logs/{id}/restore', [LogController::class, 'restore']);
 Route::delete('/logs', [LogController::class, 'deleteAll']);
 
 Route::apiResource('logs', LogController::class);
+Route::apiResource('schedules', ScheduleController::class);
 
 Route::get('/operators', [LogController::class, 'indexOperators']);
 Route::post('/operators', [LogController::class, 'storeOperator']);

@@ -118,9 +118,7 @@ function LogPage() {
                     )}
                 </section>
 
-                <footer className="mt-8 text-center text-xs text-slate-400 font-medium">
-                    E-Logger System · {new Date().getFullYear()} · Powered by Radio Communication
-                </footer>
+            
             </div>
         </div>
     );

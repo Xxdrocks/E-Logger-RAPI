@@ -16,3 +16,7 @@
   --color-accent-light: #dcfce7;
   --color-accent-dark: #15803d;
 }
+
+* {
+  font-family: 'Work Sans', system-ui, -apple-system, sans-serif;
+}
