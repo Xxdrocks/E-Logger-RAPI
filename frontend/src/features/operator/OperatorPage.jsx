@@ -7,7 +7,7 @@ const styles = {
         backgroundColor: '#f0f4ff',
         position: 'relative',
         overflow: 'hidden',
-        fontFamily: "'Segoe UI', system-ui, -apple-system, sans-serif",
+        fontFamily: "'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif",
     },
     bgBlob1: {
         position: 'absolute',
@@ -55,11 +55,11 @@ const styles = {
         width: '46px',
         height: '46px',
         borderRadius: '14px',
-        background: 'linear-gradient(135deg, #8b5cf6, #6366f1)',
+        background: 'linear-gradient(135deg, #10b981, #14b8a6)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '0 8px 20px rgba(99,102,241,0.35)',
+        boxShadow: '0 8px 20px rgba(16,185,129,0.35)',
         flexShrink: 0,
     },
     appTitle: {
@@ -114,7 +114,7 @@ const styles = {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        boxShadow: '0 4px 10px rgba(99,102,241,0.25)',
+        boxShadow: '0 4px 10px rgba(16,185,129,0.25)',
         flexShrink: 0,
     },
     cardTitle: {
@@ -166,13 +166,13 @@ const styles = {
         gap: '8px',
         padding: '10px 22px',
         borderRadius: '12px',
-        background: 'linear-gradient(135deg, #8b5cf6, #6366f1)',
+        background: 'linear-gradient(135deg, #10b981, #14b8a6)',
         color: 'white',
         fontSize: '14px',
         fontWeight: '600',
         border: 'none',
         cursor: 'pointer',
-        boxShadow: '0 4px 12px rgba(99,102,241,0.3)',
+        boxShadow: '0 4px 12px rgba(16,185,129,0.3)',
         transition: 'all 0.2s',
         whiteSpace: 'nowrap',
     },
@@ -216,15 +216,21 @@ const styles = {
         borderBottom: '1px solid #f8fafc',
         verticalAlign: 'middle',
     },
-    badgePurple: {
+    badgeGreen: {
         fontFamily: 'monospace',
         fontWeight: '700',
-        color: '#7c3aed',
-        backgroundColor: '#f5f3ff',
-        border: '1px solid #ddd6fe',
+        color: '#059669',
+        backgroundColor: '#d1fae5',
+        border: '1px solid #a7f3d0',
         padding: '3px 10px',
         borderRadius: '8px',
         fontSize: '13px',
+    },
+    badgeRole: {
+        fontWeight: '600',
+        padding: '3px 10px',
+        borderRadius: '8px',
+        fontSize: '11px',
     },
     btnEdit: {
         display: 'inline-flex',
@@ -317,14 +323,14 @@ const styles = {
 };
 
 function OperatorPage() {
-    const [operators, setOperators] = useState([]);
+    const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [form, setForm] = useState({ ncs: '', nama: '' });
     const [focusedField, setFocusedField] = useState(null);
     const [submitting, setSubmitting] = useState(false);
     const [toast, setToast] = useState(null);
     const [editTarget, setEditTarget] = useState(null);
-    const [editForm, setEditForm] = useState({ ncs: '', nama: '' });
+    const [editForm, setEditForm] = useState({ ncs: '', nama: '', role: '' });
     const [deletingId, setDeletingId] = useState(null);
 
     const showToast = (message, color = '#10b981') => {
@@ -332,10 +338,10 @@ function OperatorPage() {
         setTimeout(() => setToast(null), 2500);
     };
 
-    const fetchOperators = async () => {
+    const fetchUsers = async () => {
         try {
-            const res = await axios.get('http://127.0.0.1:8000/api/operators');
-            setOperators(res.data);
+            const res = await axios.get('http://127.0.0.1:8000/api/users');
+            setUsers(res.data);
         } catch (err) {
             console.error(err);
         } finally {
@@ -344,55 +350,55 @@ function OperatorPage() {
     };
 
     useEffect(() => {
-        fetchOperators();
+        fetchUsers();
     }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSubmitting(true);
         try {
-            await axios.post('http://127.0.0.1:8000/api/operators', form);
+            await axios.post('http://127.0.0.1:8000/api/users', form);
             setForm({ ncs: '', nama: '' });
-            showToast('✓ Operator berhasil ditambahkan');
-            fetchOperators();
+            showToast('Operator berhasil ditambahkan');
+            fetchUsers();
         } catch (err) {
             const msg = err.response?.data?.errors
                 ? Object.values(err.response.data.errors).flat().join(', ')
                 : 'Terjadi kesalahan';
-            showToast('✕ ' + msg, '#ef4444');
+            showToast(msg, '#ef4444');
         } finally {
             setSubmitting(false);
         }
     };
 
-    const handleEdit = (op) => {
-        setEditTarget(op);
-        setEditForm({ ncs: op.ncs, nama: op.nama });
+    const handleEdit = (user) => {
+        setEditTarget(user);
+        setEditForm({ ncs: user.ncs, nama: user.nama, role: user.role });
     };
 
     const handleUpdate = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`http://127.0.0.1:8000/api/operators/${editTarget.id}`, editForm);
-            showToast('✓ Operator berhasil diupdate');
+            await axios.put(`http://127.0.0.1:8000/api/users/${editTarget.id}`, editForm);
+            showToast('Operator berhasil diupdate');
             setEditTarget(null);
-            fetchOperators();
+            fetchUsers();
         } catch (err) {
             const msg = err.response?.data?.errors
                 ? Object.values(err.response.data.errors).flat().join(', ')
                 : 'Terjadi kesalahan';
-            showToast('✕ ' + msg, '#ef4444');
+            showToast(msg, '#ef4444');
         }
     };
 
     const handleDelete = async (id) => {
         setDeletingId(id);
         try {
-            await axios.delete(`http://127.0.0.1:8000/api/operators/${id}`);
-            showToast('✓ Operator berhasil dihapus');
-            fetchOperators();
+            await axios.delete(`http://127.0.0.1:8000/api/users/${id}`);
+            showToast('Operator berhasil dihapus');
+            fetchUsers();
         } catch (err) {
-            showToast('✕ Gagal menghapus', '#ef4444');
+            showToast('Gagal menghapus', '#ef4444');
         } finally {
             setDeletingId(null);
         }
@@ -413,34 +419,50 @@ function OperatorPage() {
                 <div style={styles.modalOverlay}>
                     <div style={styles.modalCard}>
                         <p style={styles.modalTitle}>Edit Operator</p>
-                        <p style={styles.modalSubtitle}>Ubah data NCS dan nama operator</p>
+                        <p style={styles.modalSubtitle}>Ubah data operator</p>
                         <form onSubmit={handleUpdate}>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
                                 <div>
-                                    <label style={styles.label}>📡 NCS</label>
+                                    <label style={styles.label}>NCS</label>
                                     <input
                                         value={editForm.ncs}
-                                        onChange={(e) => setEditForm({ ...editForm, ncs: e.target.value })}
+                                        onChange={(e) => setEditForm({ ...editForm, ncs: e.target.value.toUpperCase() })}
                                         style={{
                                             ...styles.input,
-                                            borderColor: '#818cf8',
-                                            boxShadow: '0 0 0 3px rgba(129,140,248,0.15)',
+                                            borderColor: '#10b981',
+                                            boxShadow: '0 0 0 3px rgba(16,185,129,0.15)',
+                                            textTransform: 'uppercase',
                                         }}
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label style={styles.label}>👤 Nama</label>
+                                    <label style={styles.label}>Nama</label>
                                     <input
                                         value={editForm.nama}
                                         onChange={(e) => setEditForm({ ...editForm, nama: e.target.value })}
                                         style={{
                                             ...styles.input,
-                                            borderColor: '#818cf8',
-                                            boxShadow: '0 0 0 3px rgba(129,140,248,0.15)',
+                                            borderColor: '#10b981',
+                                            boxShadow: '0 0 0 3px rgba(16,185,129,0.15)',
                                         }}
                                         required
                                     />
+                                </div>
+                                <div>
+                                    <label style={styles.label}>Role</label>
+                                    <select
+                                        value={editForm.role}
+                                        onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+                                        style={{
+                                            ...styles.input,
+                                            borderColor: '#10b981',
+                                            boxShadow: '0 0 0 3px rgba(16,185,129,0.15)',
+                                        }}
+                                    >
+                                        <option value="member">Member</option>
+                                        <option value="admin">Admin</option>
+                                    </select>
                                 </div>
                             </div>
                             <div style={styles.modalActions}>
@@ -452,9 +474,6 @@ function OperatorPage() {
                                     Batal
                                 </button>
                                 <button type="submit" style={styles.btnPrimary}>
-                                    <svg width="14" height="14" fill="none" stroke="white" strokeWidth="2.2" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                    </svg>
                                     Simpan
                                 </button>
                             </div>
@@ -473,7 +492,7 @@ function OperatorPage() {
                         </div>
                         <div>
                             <h1 style={styles.appTitle}>Manajemen Operator</h1>
-                            <p style={styles.appSubtitle}>Kelola data NCS dan nama operator</p>
+                            <p style={styles.appSubtitle}>Kelola data operator RAPI</p>
                         </div>
                     </div>
 
@@ -481,13 +500,13 @@ function OperatorPage() {
                         <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                         </svg>
-                        Kembali ke Log
+                        Kembali
                     </a>
                 </div>
 
                 <div style={styles.card}>
                     <div style={styles.cardHeader}>
-                        <div style={{ ...styles.iconBox, background: 'linear-gradient(135deg, #8b5cf6, #6366f1)' }}>
+                        <div style={{ ...styles.iconBox, background: 'linear-gradient(135deg, #10b981, #14b8a6)' }}>
                             <svg width="16" height="16" fill="none" stroke="white" strokeWidth="2.2" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                             </svg>
@@ -501,35 +520,36 @@ function OperatorPage() {
                     <form onSubmit={handleSubmit}>
                         <div style={styles.formRow}>
                             <div style={styles.fieldWrapper}>
-                                <label style={styles.label}>📡 NCS</label>
+                                <label style={styles.label}>NCS</label>
                                 <input
-                                    placeholder="Contoh: JZ09VAG"
+                                    placeholder="JZ09VAG"
                                     value={form.ncs}
-                                    onChange={(e) => setForm({ ...form, ncs: e.target.value })}
+                                    onChange={(e) => setForm({ ...form, ncs: e.target.value.toUpperCase() })}
                                     onFocus={() => setFocusedField('ncs')}
                                     onBlur={() => setFocusedField(null)}
                                     style={{
                                         ...styles.input,
-                                        borderColor: focusedField === 'ncs' ? '#818cf8' : '#e2e8f0',
+                                        borderColor: focusedField === 'ncs' ? '#10b981' : '#e2e8f0',
                                         backgroundColor: focusedField === 'ncs' ? 'white' : 'rgba(248,250,252,0.8)',
-                                        boxShadow: focusedField === 'ncs' ? '0 0 0 3px rgba(129,140,248,0.15)' : 'none',
+                                        boxShadow: focusedField === 'ncs' ? '0 0 0 3px rgba(16,185,129,0.15)' : 'none',
+                                        textTransform: 'uppercase',
                                     }}
                                     required
                                 />
                             </div>
                             <div style={{ ...styles.fieldWrapper, flex: 2 }}>
-                                <label style={styles.label}>👤 Nama Operator</label>
+                                <label style={styles.label}>Nama Operator</label>
                                 <input
-                                    placeholder="Contoh: Ahmad Fauzi"
+                                    placeholder="Ahmad Fauzi"
                                     value={form.nama}
                                     onChange={(e) => setForm({ ...form, nama: e.target.value })}
                                     onFocus={() => setFocusedField('nama')}
                                     onBlur={() => setFocusedField(null)}
                                     style={{
                                         ...styles.input,
-                                        borderColor: focusedField === 'nama' ? '#818cf8' : '#e2e8f0',
+                                        borderColor: focusedField === 'nama' ? '#10b981' : '#e2e8f0',
                                         backgroundColor: focusedField === 'nama' ? 'white' : 'rgba(248,250,252,0.8)',
-                                        boxShadow: focusedField === 'nama' ? '0 0 0 3px rgba(129,140,248,0.15)' : 'none',
+                                        boxShadow: focusedField === 'nama' ? '0 0 0 3px rgba(16,185,129,0.15)' : 'none',
                                     }}
                                     required
                                 />
@@ -539,9 +559,6 @@ function OperatorPage() {
                                 disabled={submitting}
                                 style={{ ...styles.btnPrimary, opacity: submitting ? 0.65 : 1 }}
                             >
-                                <svg width="14" height="14" fill="none" stroke="white" strokeWidth="2.2" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                                </svg>
                                 Tambah
                             </button>
                         </div>
@@ -557,7 +574,7 @@ function OperatorPage() {
                         </div>
                         <div>
                             <p style={styles.cardTitle}>Daftar Operator</p>
-                            <p style={styles.cardSubtitle}>{operators.length} operator terdaftar</p>
+                            <p style={styles.cardSubtitle}>{users.length} operator terdaftar</p>
                         </div>
                     </div>
 
@@ -567,35 +584,36 @@ function OperatorPage() {
                                 <tr>
                                     <th style={styles.th}>#</th>
                                     <th style={styles.th}>NCS</th>
-                                    <th style={styles.th}>Nama Operator</th>
+                                    <th style={styles.th}>Nama</th>
+                                    <th style={styles.th}>Role</th>
                                     <th style={styles.th}>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={4} style={styles.emptyCell}>
+                                        <td colSpan={5} style={styles.emptyCell}>
                                             Memuat data...
                                         </td>
                                     </tr>
-                                ) : operators.length === 0 ? (
+                                ) : users.length === 0 ? (
                                     <tr>
-                                        <td colSpan={4} style={styles.emptyCell}>
+                                        <td colSpan={5} style={styles.emptyCell}>
                                             Belum ada operator terdaftar
                                         </td>
                                     </tr>
                                 ) : (
-                                    operators.map((op, idx) => (
+                                    users.map((user, idx) => (
                                         <tr
-                                            key={op.id}
-                                            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(245,243,255,0.5)'; }}
+                                            key={user.id}
+                                            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(209,250,229,0.3)'; }}
                                             onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
                                         >
                                             <td style={{ ...styles.td, color: '#94a3b8', fontSize: '12px', width: '40px' }}>
                                                 {idx + 1}
                                             </td>
                                             <td style={styles.td}>
-                                                <span style={styles.badgePurple}>{op.ncs}</span>
+                                                <span style={styles.badgeGreen}>{user.ncs}</span>
                                             </td>
                                             <td style={{ ...styles.td, fontWeight: '600', color: '#334155' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -603,7 +621,7 @@ function OperatorPage() {
                                                         width: '26px',
                                                         height: '26px',
                                                         borderRadius: '50%',
-                                                        background: 'linear-gradient(135deg, #8b5cf6, #6366f1)',
+                                                        background: 'linear-gradient(135deg, #10b981, #14b8a6)',
                                                         display: 'flex',
                                                         alignItems: 'center',
                                                         justifyContent: 'center',
@@ -612,33 +630,37 @@ function OperatorPage() {
                                                         fontWeight: '700',
                                                         flexShrink: 0,
                                                     }}>
-                                                        {op.nama[0].toUpperCase()}
+                                                        {user.nama?.[0]?.toUpperCase() || '?'}
                                                     </div>
-                                                    {op.nama}
+                                                    {user.nama}
                                                 </div>
                                             </td>
                                             <td style={styles.td}>
+                                                <span style={{
+                                                    ...styles.badgeRole,
+                                                    color: user.role === 'admin' ? '#7c3aed' : '#059669',
+                                                    backgroundColor: user.role === 'admin' ? '#f5f3ff' : '#d1fae5',
+                                                    border: user.role === 'admin' ? '1px solid #ddd6fe' : '1px solid #a7f3d0',
+                                                }}>
+                                                    {user.role}
+                                                </span>
+                                            </td>
+                                            <td style={styles.td}>
                                                 <button
-                                                    onClick={() => handleEdit(op)}
+                                                    onClick={() => handleEdit(user)}
                                                     style={styles.btnEdit}
                                                     onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#dbeafe'; }}
                                                     onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#eff6ff'; }}
                                                 >
-                                                    <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                                                    </svg>
                                                     Edit
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDelete(op.id)}
-                                                    disabled={deletingId === op.id}
-                                                    style={{ ...styles.btnDeleteSm, opacity: deletingId === op.id ? 0.5 : 1 }}
+                                                    onClick={() => handleDelete(user.id)}
+                                                    disabled={deletingId === user.id}
+                                                    style={{ ...styles.btnDeleteSm, opacity: deletingId === user.id ? 0.5 : 1 }}
                                                     onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#fee2e2'; }}
                                                     onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#fef2f2'; }}
                                                 >
-                                                    <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                    </svg>
                                                     Hapus
                                                 </button>
                                             </td>
@@ -654,11 +676,6 @@ function OperatorPage() {
                     E-Logger System · {new Date().getFullYear()} · Manajemen Operator
                 </footer>
             </div>
-
-            <style>{`
-                @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-                * { box-sizing: border-box; }
-            `}</style>
         </div>
     );
 }

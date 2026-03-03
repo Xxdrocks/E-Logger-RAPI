@@ -119,56 +119,28 @@ class LogController extends Controller
 
     public function export(Request $request)
     {
-        $keterangan = $request->keterangan ?? 'semua_data';
+        $keterangan = $request->get('keterangan', 'semua_data');
         $keterangan = preg_replace('/[^A-Za-z0-9\-]/', '_', $keterangan);
         $tanggal = now()->format('d-m-Y');
         $fileName = "{$tanggal}_{$keterangan}.xlsx";
 
-        return Excel::download(new LogsExport, $fileName);
+        $export = new LogsExport();
+
+        $file = Excel::raw($export, \Maatwebsite\Excel\Excel::XLSX);
+
+        return response($file, 200)
+            ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            ->header('Content-Disposition', 'attachment; filename="' . $fileName . '"')
+            ->header('Cache-Control', 'max-age=0');
     }
 
     public function searchNcs(Request $request)
     {
-        $operators = \App\Models\Operator::where('ncs', 'like', "%{$request->q}%")
-            ->limit(5)
+        $users = \App\Models\User::where('ncs', 'like', "%{$request->q}%")
+            ->orWhere('nama', 'like', "%{$request->q}%")
+            ->limit(10)
             ->get(['ncs', 'nama']);
 
-        return response()->json($operators);
-    }
-
-    public function indexOperators()
-    {
-        $operators = \App\Models\Operator::orderBy('ncs')->get();
-        return response()->json($operators);
-    }
-
-    public function storeOperator(Request $request)
-    {
-        $request->validate([
-            'ncs'  => 'required|string|max:20|unique:operators,ncs',
-            'nama' => 'required|string|max:100',
-        ]);
-
-        $operator = \App\Models\Operator::create($request->only('ncs', 'nama'));
-        return response()->json($operator, 201);
-    }
-
-    public function updateOperator(Request $request, $id)
-    {
-        $operator = \App\Models\Operator::findOrFail($id);
-
-        $request->validate([
-            'ncs'  => 'required|string|max:20|unique:operators,ncs,' . $id,
-            'nama' => 'required|string|max:100',
-        ]);
-
-        $operator->update($request->only('ncs', 'nama'));
-        return response()->json($operator);
-    }
-
-    public function destroyOperator($id)
-    {
-        \App\Models\Operator::findOrFail($id)->delete();
-        return response()->json(['success' => true]);
+        return response()->json($users);
     }
 }

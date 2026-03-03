@@ -24,7 +24,7 @@ function LogTable({ logs = [], refresh, session }) {
             return;
         }
         try {
-            await axios.delete("http://127.0.0.1:8000/api/logs");
+            await axios.delete("http://127.0.0.1:8000/api/logs/delete-all");
             refresh();
         } catch (error) {
             console.error("Delete all error:", error);
@@ -33,9 +33,43 @@ function LogTable({ logs = [], refresh, session }) {
         }
     };
 
-    const handleExport = () => {
-        const ket = session?.keterangan ?? '';
-        window.open(`http://127.0.0.1:8000/api/logs/export?keterangan=${encodeURIComponent(ket)}`, '_blank');
+    const handleExport = async () => {
+        const ket = session?.keterangan || 'semua_data';
+        const token = localStorage.getItem('token');
+        
+        // Generate filename di frontend (tanggal Indonesia)
+        const today = new Date();
+        const day = String(today.getDate()).padStart(2, '0');
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const year = today.getFullYear();
+        const fileName = `${day}-${month}-${year}_${ket}.xlsx`;
+        
+        try {
+            const response = await axios.get('http://127.0.0.1:8000/api/logs/export', {
+                params: { keterangan: ket },
+                headers: { Authorization: `Bearer ${token}` },
+                responseType: 'blob'
+            });
+
+            // Create download link
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = fileName; // Use generated filename
+            
+            // Trigger download
+            document.body.appendChild(link);
+            link.click();
+            
+            // Cleanup
+            setTimeout(() => {
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+            }, 100);
+        } catch (error) {
+            console.error('Export error:', error);
+            alert('Gagal export file');
+        }
     };
 
     const columns = ["Freq", "10/28", "Waktu", "ZZD", "Nama", "Keterangan", "Aksi"];
