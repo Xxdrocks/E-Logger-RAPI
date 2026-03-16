@@ -1,339 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const styles = {
-    page: {
-        minHeight: '100vh',
-        backgroundColor: '#f0f4ff',
-        position: 'relative',
-        overflow: 'hidden',
-        fontFamily: "'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif",
-    },
-    bgBlob1: {
-        position: 'absolute',
-        top: '-160px',
-        right: '-160px',
-        width: '384px',
-        height: '384px',
-        backgroundColor: 'rgba(199,210,254,0.4)',
-        borderRadius: '50%',
-        filter: 'blur(80px)',
-        pointerEvents: 'none',
-    },
-    bgBlob2: {
-        position: 'absolute',
-        bottom: '-128px',
-        left: '-128px',
-        width: '320px',
-        height: '320px',
-        backgroundColor: 'rgba(186,230,253,0.4)',
-        borderRadius: '50%',
-        filter: 'blur(80px)',
-        pointerEvents: 'none',
-    },
-    container: {
-        position: 'relative',
-        zIndex: 10,
-        maxWidth: '900px',
-        margin: '0 auto',
-        padding: '40px 24px',
-    },
-    header: {
-        display: 'flex',
-        flexWrap: 'wrap',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: '16px',
-        marginBottom: '32px',
-    },
-    logoRow: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '14px',
-    },
-    logoBox: {
-        width: '46px',
-        height: '46px',
-        borderRadius: '14px',
-        background: 'linear-gradient(135deg, #10b981, #14b8a6)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        boxShadow: '0 8px 20px rgba(16,185,129,0.35)',
-        flexShrink: 0,
-    },
-    appTitle: {
-        fontSize: '22px',
-        fontWeight: '800',
-        color: '#0f172a',
-        margin: 0,
-        letterSpacing: '-0.02em',
-    },
-    appSubtitle: {
-        fontSize: '12px',
-        color: '#64748b',
-        marginTop: '3px',
-    },
-    backBtn: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '6px',
-        padding: '8px 16px',
-        borderRadius: '10px',
-        backgroundColor: 'rgba(255,255,255,0.8)',
-        border: '1px solid #e2e8f0',
-        color: '#475569',
-        fontSize: '13px',
-        fontWeight: '600',
-        cursor: 'pointer',
-        textDecoration: 'none',
-        transition: 'all 0.15s',
-        backdropFilter: 'blur(8px)',
-    },
-    card: {
-        backgroundColor: 'rgba(255,255,255,0.75)',
-        backdropFilter: 'blur(12px)',
-        border: '1px solid rgba(226,232,240,0.8)',
-        borderRadius: '16px',
-        boxShadow: '0 10px 40px rgba(148,163,184,0.2)',
-        padding: '28px',
-        marginBottom: '24px',
-    },
-    cardHeader: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        marginBottom: '24px',
-        paddingBottom: '20px',
-        borderBottom: '1px solid #f1f5f9',
-    },
-    iconBox: {
-        width: '36px',
-        height: '36px',
-        borderRadius: '12px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        boxShadow: '0 4px 10px rgba(16,185,129,0.25)',
-        flexShrink: 0,
-    },
-    cardTitle: {
-        fontSize: '15px',
-        fontWeight: '700',
-        color: '#1e293b',
-        margin: 0,
-    },
-    cardSubtitle: {
-        fontSize: '12px',
-        color: '#94a3b8',
-        marginTop: '2px',
-    },
-    formRow: {
-        display: 'flex',
-        gap: '12px',
-        flexWrap: 'wrap',
-        alignItems: 'flex-end',
-    },
-    fieldWrapper: {
-        display: 'flex',
-        flexDirection: 'column',
-        flex: 1,
-        minWidth: '140px',
-    },
-    label: {
-        fontSize: '11px',
-        fontWeight: '700',
-        color: '#64748b',
-        marginBottom: '6px',
-        textTransform: 'uppercase',
-        letterSpacing: '0.05em',
-    },
-    input: {
-        padding: '10px 14px',
-        borderRadius: '12px',
-        border: '1px solid #e2e8f0',
-        backgroundColor: 'rgba(248,250,252,0.8)',
-        color: '#1e293b',
-        fontSize: '14px',
-        outline: 'none',
-        transition: 'all 0.2s',
-        boxSizing: 'border-box',
-        width: '100%',
-    },
-    btnPrimary: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        padding: '10px 22px',
-        borderRadius: '12px',
-        background: 'linear-gradient(135deg, #10b981, #14b8a6)',
-        color: 'white',
-        fontSize: '14px',
-        fontWeight: '600',
-        border: 'none',
-        cursor: 'pointer',
-        boxShadow: '0 4px 12px rgba(16,185,129,0.3)',
-        transition: 'all 0.2s',
-        whiteSpace: 'nowrap',
-    },
-    btnSecondary: {
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        padding: '10px 18px',
-        borderRadius: '12px',
-        backgroundColor: '#f1f5f9',
-        color: '#475569',
-        fontSize: '14px',
-        fontWeight: '600',
-        border: '1px solid #e2e8f0',
-        cursor: 'pointer',
-        transition: 'all 0.2s',
-        whiteSpace: 'nowrap',
-    },
-    tableWrapper: {
-        overflowX: 'auto',
-    },
-    table: {
-        width: '100%',
-        borderCollapse: 'collapse',
-        fontSize: '13px',
-    },
-    th: {
-        padding: '12px 20px',
-        textAlign: 'left',
-        fontSize: '11px',
-        fontWeight: '700',
-        color: '#64748b',
-        textTransform: 'uppercase',
-        letterSpacing: '0.07em',
-        backgroundColor: 'rgba(248,250,252,0.8)',
-        borderBottom: '1px solid #f1f5f9',
-        whiteSpace: 'nowrap',
-    },
-    td: {
-        padding: '12px 20px',
-        borderBottom: '1px solid #f8fafc',
-        verticalAlign: 'middle',
-    },
-    badgeGreen: {
-        fontFamily: 'monospace',
-        fontWeight: '700',
-        color: '#059669',
-        backgroundColor: '#d1fae5',
-        border: '1px solid #a7f3d0',
-        padding: '3px 10px',
-        borderRadius: '8px',
-        fontSize: '13px',
-    },
-    badgeRole: {
-        fontWeight: '600',
-        padding: '3px 10px',
-        borderRadius: '8px',
-        fontSize: '11px',
-    },
-    btnEdit: {
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '4px',
-        padding: '6px 12px',
-        borderRadius: '8px',
-        backgroundColor: '#eff6ff',
-        color: '#3b82f6',
-        border: '1px solid #bfdbfe',
-        fontSize: '12px',
-        fontWeight: '600',
-        cursor: 'pointer',
-        transition: 'all 0.15s',
-        marginRight: '6px',
-    },
-    btnDeleteSm: {
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: '4px',
-        padding: '6px 12px',
-        borderRadius: '8px',
-        backgroundColor: '#fef2f2',
-        color: '#ef4444',
-        border: '1px solid #fecaca',
-        fontSize: '12px',
-        fontWeight: '600',
-        cursor: 'pointer',
-        transition: 'all 0.15s',
-    },
-    emptyCell: {
-        padding: '48px 20px',
-        textAlign: 'center',
-        color: '#94a3b8',
-        fontSize: '13px',
-    },
-    toast: {
-        position: 'fixed',
-        top: '24px',
-        left: '50%',
-        transform: 'translateX(-50%)',
-        zIndex: 999,
-        display: 'flex',
-        alignItems: 'center',
-        gap: '8px',
-        color: 'white',
-        fontSize: '14px',
-        fontWeight: '600',
-        padding: '10px 20px',
-        borderRadius: '999px',
-        boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
-        whiteSpace: 'nowrap',
-    },
-    modalOverlay: {
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(15,23,42,0.4)',
-        backdropFilter: 'blur(4px)',
-        zIndex: 200,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '24px',
-    },
-    modalCard: {
-        backgroundColor: 'white',
-        borderRadius: '20px',
-        padding: '32px',
-        width: '100%',
-        maxWidth: '420px',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
-    },
-    modalTitle: {
-        fontSize: '18px',
-        fontWeight: '800',
-        color: '#0f172a',
-        margin: '0 0 4px',
-    },
-    modalSubtitle: {
-        fontSize: '13px',
-        color: '#64748b',
-        margin: '0 0 24px',
-    },
-    modalActions: {
-        display: 'flex',
-        gap: '10px',
-        marginTop: '24px',
-        justifyContent: 'flex-end',
-    },
-};
-
 function OperatorPage() {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [form, setForm] = useState({ ncs: '', nama: '' });
-    const [focusedField, setFocusedField] = useState(null);
     const [submitting, setSubmitting] = useState(false);
     const [toast, setToast] = useState(null);
     const [editTarget, setEditTarget] = useState(null);
     const [editForm, setEditForm] = useState({ ncs: '', nama: '', role: '' });
     const [deletingId, setDeletingId] = useState(null);
+    const [showImportModal, setShowImportModal] = useState(false);
+    const [importFile, setImportFile] = useState(null);
+    const [importing, setImporting] = useState(false);
+    const [importResult, setImportResult] = useState(null);
 
-    const showToast = (message, color = '#10b981') => {
+    const showToast = (message, color = 'bg-primary') => {
         setToast({ message, color });
         setTimeout(() => setToast(null), 2500);
     };
@@ -359,13 +41,13 @@ function OperatorPage() {
         try {
             await axios.post('http://127.0.0.1:8000/api/users', form);
             setForm({ ncs: '', nama: '' });
-            showToast('Operator berhasil ditambahkan');
+            showToast('✓ Operator berhasil ditambahkan');
             fetchUsers();
         } catch (err) {
             const msg = err.response?.data?.errors
                 ? Object.values(err.response.data.errors).flat().join(', ')
                 : 'Terjadi kesalahan';
-            showToast(msg, '#ef4444');
+            showToast('✕ ' + msg, 'bg-red-500');
         } finally {
             setSubmitting(false);
         }
@@ -380,14 +62,14 @@ function OperatorPage() {
         e.preventDefault();
         try {
             await axios.put(`http://127.0.0.1:8000/api/users/${editTarget.id}`, editForm);
-            showToast('Operator berhasil diupdate');
+            showToast('✓ Operator berhasil diupdate');
             setEditTarget(null);
             fetchUsers();
         } catch (err) {
             const msg = err.response?.data?.errors
                 ? Object.values(err.response.data.errors).flat().join(', ')
                 : 'Terjadi kesalahan';
-            showToast(msg, '#ef4444');
+            showToast('✕ ' + msg, 'bg-red-500');
         }
     };
 
@@ -395,85 +77,142 @@ function OperatorPage() {
         setDeletingId(id);
         try {
             await axios.delete(`http://127.0.0.1:8000/api/users/${id}`);
-            showToast('Operator berhasil dihapus');
+            showToast('✓ Operator berhasil dihapus');
             fetchUsers();
         } catch (err) {
-            showToast('Gagal menghapus', '#ef4444');
+            showToast('✕ Gagal menghapus', 'bg-red-500');
         } finally {
             setDeletingId(null);
         }
     };
 
+    const handleFileChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            const validTypes = ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel', 'text/csv'];
+            if (!validTypes.includes(file.type)) {
+                showToast('✕ Format file harus .xlsx, .xls, atau .csv', 'bg-red-500');
+                return;
+            }
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('✕ Ukuran file maksimal 5MB', 'bg-red-500');
+                return;
+            }
+            setImportFile(file);
+        }
+    };
+
+    const handleImport = async () => {
+        if (!importFile) {
+            showToast('✕ Pilih file terlebih dahulu', 'bg-red-500');
+            return;
+        }
+
+        setImporting(true);
+        setImportResult(null);
+
+        try {
+            const formData = new FormData();
+            formData.append('file', importFile);
+
+            const res = await axios.post('http://127.0.0.1:8000/api/users/bulk-import', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            });
+
+            setImportResult(res.data);
+            
+            if (res.data.success) {
+                showToast(`✓ ${res.data.message}`);
+                fetchUsers();
+            }
+        } catch (error) {
+            const errorMsg = error.response?.data?.message || 'Gagal melakukan import';
+            showToast(`✕ ${errorMsg}`, 'bg-red-500');
+            setImportResult({
+                success: false,
+                message: errorMsg
+            });
+        } finally {
+            setImporting(false);
+        }
+    };
+
+    const closeImportModal = () => {
+        setShowImportModal(false);
+        setImportFile(null);
+        setImportResult(null);
+    };
+
     return (
-        <div style={styles.page}>
-            <div style={styles.bgBlob1} />
-            <div style={styles.bgBlob2} />
+        <div className="min-h-screen bg-gradient-to-br from-primary-light via-secondary-light to-accent-light relative overflow-hidden">
+            <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-32 -left-32 w-80 h-80 bg-secondary/20 rounded-full blur-3xl pointer-events-none" />
 
             {toast && (
-                <div style={{ ...styles.toast, backgroundColor: toast.color }}>
+                <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[999] flex items-center gap-2 ${toast.color} text-white text-sm font-semibold px-5 py-2.5 rounded-full shadow-lg whitespace-nowrap`}>
                     {toast.message}
                 </div>
             )}
 
             {editTarget && (
-                <div style={styles.modalOverlay}>
-                    <div style={styles.modalCard}>
-                        <p style={styles.modalTitle}>Edit Operator</p>
-                        <p style={styles.modalSubtitle}>Ubah data operator</p>
+                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[200] flex items-center justify-center p-6">
+                    <div className="bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl">
+                        <h2 className="text-lg font-bold text-slate-900 mb-1">Edit Operator</h2>
+                        <p className="text-sm text-slate-500 mb-6">Ubah data operator</p>
+                        
                         <form onSubmit={handleUpdate}>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                            <div className="flex flex-col gap-3.5">
                                 <div>
-                                    <label style={styles.label}>NCS</label>
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
+                                        10-28
+                                    </label>
                                     <input
                                         value={editForm.ncs}
                                         onChange={(e) => setEditForm({ ...editForm, ncs: e.target.value.toUpperCase() })}
-                                        style={{
-                                            ...styles.input,
-                                            borderColor: '#10b981',
-                                            boxShadow: '0 0 0 3px rgba(16,185,129,0.15)',
-                                            textTransform: 'uppercase',
-                                        }}
+                                        className="w-full px-3.5 py-2.5 rounded-xl border border-primary bg-white text-slate-800 text-sm outline-none uppercase shadow-sm ring-4 ring-primary-light/30"
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label style={styles.label}>Nama</label>
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
+                                        Nama
+                                    </label>
                                     <input
                                         value={editForm.nama}
                                         onChange={(e) => setEditForm({ ...editForm, nama: e.target.value })}
-                                        style={{
-                                            ...styles.input,
-                                            borderColor: '#10b981',
-                                            boxShadow: '0 0 0 3px rgba(16,185,129,0.15)',
-                                        }}
+                                        className="w-full px-3.5 py-2.5 rounded-xl border border-primary bg-white text-slate-800 text-sm outline-none shadow-sm ring-4 ring-primary-light/30"
                                         required
                                     />
                                 </div>
                                 <div>
-                                    <label style={styles.label}>Role</label>
+                                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
+                                        Role
+                                    </label>
                                     <select
                                         value={editForm.role}
                                         onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
-                                        style={{
-                                            ...styles.input,
-                                            borderColor: '#10b981',
-                                            boxShadow: '0 0 0 3px rgba(16,185,129,0.15)',
-                                        }}
+                                        className="w-full px-3.5 py-2.5 rounded-xl border border-primary bg-white text-slate-800 text-sm outline-none shadow-sm ring-4 ring-primary-light/30"
                                     >
                                         <option value="member">Member</option>
                                         <option value="admin">Admin</option>
                                     </select>
                                 </div>
                             </div>
-                            <div style={styles.modalActions}>
+                            
+                            <div className="flex items-center gap-2.5 mt-6 justify-end">
                                 <button
                                     type="button"
                                     onClick={() => setEditTarget(null)}
-                                    style={styles.btnSecondary}
+                                    className="px-5 py-2.5 rounded-xl bg-slate-100 text-slate-600 text-sm font-semibold border border-slate-200 hover:bg-slate-200 transition-all"
                                 >
                                     Batal
                                 </button>
-                                <button type="submit" style={styles.btnPrimary}>
+                                <button
+                                    type="submit"
+                                    className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-white text-sm font-semibold shadow-md hover:shadow-lg transition-all"
+                                >
                                     Simpan
                                 </button>
                             </div>
@@ -482,82 +221,199 @@ function OperatorPage() {
                 </div>
             )}
 
-            <div style={styles.container}>
-                <div style={styles.header}>
-                    <div style={styles.logoRow}>
-                        <div style={styles.logoBox}>
-                            <svg width="22" height="22" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24">
+            {showImportModal && (
+                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[200] flex items-center justify-center p-6">
+                    <div className="bg-white rounded-2xl p-8 w-full max-w-2xl shadow-2xl max-h-[90vh] overflow-y-auto">
+                        <h2 className="text-lg font-bold text-slate-900 mb-1">Import Data Excel</h2>
+                        <p className="text-sm text-slate-500 mb-6">Upload file Excel untuk import massal</p>
+                        
+                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+                            <h3 className="font-bold text-blue-900 mb-2 text-sm flex items-center gap-2">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                Format File Excel
+                            </h3>
+                            <ul className="text-xs text-blue-800 space-y-1">
+                                <li>• <strong>Kolom A:</strong> NCS / 10-28 (wajib)</li>
+                                <li>• <strong>Kolom B:</strong> Nama (wajib)</li>
+                                <li>• <strong>Role:</strong> Otomatis "member"</li>
+                                <li>• <strong>Format:</strong> .xlsx / .xls / .csv (max 5MB)</li>
+                                <li>• Tidak perlu header, langsung data dari baris pertama</li>
+                            </ul>
+                        </div>
+
+                        <div className="mb-6">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-2">
+                                Pilih File
+                            </label>
+                            <input
+                                type="file"
+                                accept=".xlsx,.xls,.csv"
+                                onChange={handleFileChange}
+                                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm outline-none focus:border-primary focus:bg-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-white hover:file:bg-primary-hover"
+                            />
+                            {importFile && (
+                                <p className="mt-2 text-xs text-slate-600">
+                                    📄 <strong>{importFile.name}</strong> ({(importFile.size / 1024).toFixed(2)} KB)
+                                </p>
+                            )}
+                        </div>
+
+                        {importResult && (
+                            <div className={`rounded-xl p-4 mb-6 ${
+                                importResult.success 
+                                    ? 'bg-green-50 border border-green-200' 
+                                    : 'bg-red-50 border border-red-200'
+                            }`}>
+                                <h3 className={`font-bold mb-2 text-sm ${
+                                    importResult.success ? 'text-green-900' : 'text-red-900'
+                                }`}>
+                                    {importResult.success ? '✓ Import Berhasil' : '✗ Import Gagal'}
+                                </h3>
+                                <p className={`text-xs mb-2 ${
+                                    importResult.success ? 'text-green-800' : 'text-red-800'
+                                }`}>
+                                    {importResult.message}
+                                </p>
+                                
+                                {importResult.success && (
+                                    <div className="text-xs text-green-800">
+                                        <p>• Berhasil: <strong>{importResult.imported}</strong> data</p>
+                                        <p>• Dilewati: <strong>{importResult.skipped}</strong> data</p>
+                                    </div>
+                                )}
+
+                                {importResult.errors && importResult.errors.length > 0 && (
+                                    <div className="mt-3 max-h-32 overflow-y-auto">
+                                        <p className="text-xs font-bold text-red-900 mb-1">Detail Error:</p>
+                                        {importResult.errors.slice(0, 10).map((err, idx) => (
+                                            <p key={idx} className="text-xs text-red-700">
+                                                Baris {err.row}: {err.message}
+                                            </p>
+                                        ))}
+                                        {importResult.errors.length > 10 && (
+                                            <p className="text-xs text-red-600 italic">+ {importResult.errors.length - 10} error lainnya</p>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        <div className="flex items-center gap-2.5 justify-end">
+                            <button
+                                type="button"
+                                onClick={closeImportModal}
+                                className="px-5 py-2.5 rounded-xl bg-slate-100 text-slate-600 text-sm font-semibold hover:bg-slate-200 transition-all"
+                            >
+                                Tutup
+                            </button>
+                            <button
+                                onClick={handleImport}
+                                disabled={!importFile || importing}
+                                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-sm font-semibold shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            >
+                                {importing ? (
+                                    <>
+                                        <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                            <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="4" strokeOpacity="0.25" />
+                                            <path fill="white" fillOpacity="0.75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                        </svg>
+                                        Importing...
+                                    </>
+                                ) : (
+                                    <>
+                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                        </svg>
+                                        Import
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-10">
+                <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
+                    <div className="flex items-center gap-3.5">
+                        <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg shadow-primary/30">
+                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
                         </div>
                         <div>
-                            <h1 style={styles.appTitle}>Manajemen Operator</h1>
-                            <p style={styles.appSubtitle}>Kelola data operator RAPI</p>
+                            <h1 className="text-2xl font-bold text-slate-900 leading-tight">Manajemen Operator</h1>
+                            <p className="text-xs text-slate-500 mt-0.5">Kelola data operator RAPI</p>
                         </div>
                     </div>
 
-                    <a href="/" style={styles.backBtn}>
-                        <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                        </svg>
-                        Kembali
-                    </a>
+                    <div className="flex items-center gap-3">
+                        <button
+                            onClick={() => setShowImportModal(true)}
+                            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-sm font-semibold hover:shadow-lg transition-all"
+                        >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                            </svg>
+                            <span className="hidden sm:inline">Import</span>
+                        </button>
+                        <a
+                            href="/"
+                            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-white transition-all"
+                        >
+                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                            </svg>
+                            <span className="hidden sm:inline">Kembali</span>
+                        </a>
+                    </div>
                 </div>
 
-                <div style={styles.card}>
-                    <div style={styles.cardHeader}>
-                        <div style={{ ...styles.iconBox, background: 'linear-gradient(135deg, #10b981, #14b8a6)' }}>
-                            <svg width="16" height="16" fill="none" stroke="white" strokeWidth="2.2" viewBox="0 0 24 24">
+                <div className="bg-white/75 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-xl p-7 mb-6">
+                    <div className="flex items-center gap-3 mb-6 pb-5 border-b border-slate-100">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-md">
+                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                             </svg>
                         </div>
                         <div>
-                            <p style={styles.cardTitle}>Tambah Operator Baru</p>
-                            <p style={styles.cardSubtitle}>Input NCS dan nama operator</p>
+                            <h2 className="text-sm font-bold text-slate-800 leading-tight">Tambah Operator Baru</h2>
+                            <p className="text-xs text-slate-400 mt-0.5">Input NCS dan nama operator</p>
                         </div>
                     </div>
 
                     <form onSubmit={handleSubmit}>
-                        <div style={styles.formRow}>
-                            <div style={styles.fieldWrapper}>
-                                <label style={styles.label}>NCS</label>
+                        <div className="flex flex-wrap gap-3 items-end">
+                            <div className="flex-1 min-w-[140px]">
+                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
+                                    10-28
+                                </label>
                                 <input
-                                    placeholder="JZ09VAG"
+                                    placeholder="Data berdasarkan RAPI Nusantara"
                                     value={form.ncs}
                                     onChange={(e) => setForm({ ...form, ncs: e.target.value.toUpperCase() })}
-                                    onFocus={() => setFocusedField('ncs')}
-                                    onBlur={() => setFocusedField(null)}
-                                    style={{
-                                        ...styles.input,
-                                        borderColor: focusedField === 'ncs' ? '#10b981' : '#e2e8f0',
-                                        backgroundColor: focusedField === 'ncs' ? 'white' : 'rgba(248,250,252,0.8)',
-                                        boxShadow: focusedField === 'ncs' ? '0 0 0 3px rgba(16,185,129,0.15)' : 'none',
-                                        textTransform: 'uppercase',
-                                    }}
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-slate-800 text-sm placeholder:text-slate-300 outline-none transition-all uppercase focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary-light"
                                     required
                                 />
                             </div>
-                            <div style={{ ...styles.fieldWrapper, flex: 2 }}>
-                                <label style={styles.label}>Nama Operator</label>
+                            <div className="flex-[2] min-w-[200px]">
+                                <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
+                                    Nama Operator
+                                </label>
                                 <input
                                     placeholder="Ahmad Fauzi"
                                     value={form.nama}
                                     onChange={(e) => setForm({ ...form, nama: e.target.value })}
-                                    onFocus={() => setFocusedField('nama')}
-                                    onBlur={() => setFocusedField(null)}
-                                    style={{
-                                        ...styles.input,
-                                        borderColor: focusedField === 'nama' ? '#10b981' : '#e2e8f0',
-                                        backgroundColor: focusedField === 'nama' ? 'white' : 'rgba(248,250,252,0.8)',
-                                        boxShadow: focusedField === 'nama' ? '0 0 0 3px rgba(16,185,129,0.15)' : 'none',
-                                    }}
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-slate-800 text-sm placeholder:text-slate-300 outline-none transition-all focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary-light"
                                     required
                                 />
                             </div>
                             <button
                                 type="submit"
                                 disabled={submitting}
-                                style={{ ...styles.btnPrimary, opacity: submitting ? 0.65 : 1 }}
+                                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-white text-sm font-semibold shadow-md hover:shadow-lg transition-all whitespace-nowrap disabled:opacity-50"
                             >
                                 Tambah
                             </button>
@@ -565,104 +421,87 @@ function OperatorPage() {
                     </form>
                 </div>
 
-                <div style={{ ...styles.card, padding: 0, overflow: 'hidden' }}>
-                    <div style={{ ...styles.cardHeader, padding: '20px 28px', marginBottom: 0 }}>
-                        <div style={{ ...styles.iconBox, background: 'linear-gradient(135deg, #334155, #0f172a)' }}>
-                            <svg width="16" height="16" fill="none" stroke="white" strokeWidth="2.2" viewBox="0 0 24 24">
+                <div className="bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-xl overflow-hidden">
+                    <div className="flex items-center gap-3 px-7 py-5 border-b border-slate-100">
+                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center shadow-md">
+                            <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
                             </svg>
                         </div>
                         <div>
-                            <p style={styles.cardTitle}>Daftar Operator</p>
-                            <p style={styles.cardSubtitle}>{users.length} operator terdaftar</p>
+                            <h2 className="text-sm font-bold text-slate-800 leading-tight">Daftar Operator</h2>
+                            <p className="text-xs text-slate-400 mt-0.5">{users.length} operator terdaftar</p>
                         </div>
                     </div>
 
-                    <div style={styles.tableWrapper}>
-                        <table style={styles.table}>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm">
                             <thead>
-                                <tr>
-                                    <th style={styles.th}>#</th>
-                                    <th style={styles.th}>NCS</th>
-                                    <th style={styles.th}>Nama</th>
-                                    <th style={styles.th}>Role</th>
-                                    <th style={styles.th}>Aksi</th>
+                                <tr className="bg-slate-50/80 border-b border-slate-100">
+                                    <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">#</th>
+                                    <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">NCS</th>
+                                    <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">Nama</th>
+                                    <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">Role</th>
+                                    <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody>
+                            <tbody className="divide-y divide-slate-50">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={5} style={styles.emptyCell}>
+                                        <td colSpan={5} className="py-12 text-center text-slate-400 text-sm">
                                             Memuat data...
                                         </td>
                                     </tr>
                                 ) : users.length === 0 ? (
                                     <tr>
-                                        <td colSpan={5} style={styles.emptyCell}>
+                                        <td colSpan={5} className="py-12 text-center text-slate-400 text-sm">
                                             Belum ada operator terdaftar
                                         </td>
                                     </tr>
                                 ) : (
                                     users.map((user, idx) => (
-                                        <tr
-                                            key={user.id}
-                                            onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'rgba(209,250,229,0.3)'; }}
-                                            onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; }}
-                                        >
-                                            <td style={{ ...styles.td, color: '#94a3b8', fontSize: '12px', width: '40px' }}>
+                                        <tr key={user.id} className="hover:bg-primary-light/30 transition-colors">
+                                            <td className="px-5 py-3.5 text-slate-400 text-xs w-10">
                                                 {idx + 1}
                                             </td>
-                                            <td style={styles.td}>
-                                                <span style={styles.badgeGreen}>{user.ncs}</span>
+                                            <td className="px-5 py-3.5">
+                                                <span className="inline-block font-mono font-bold text-primary bg-primary-light border border-primary px-2.5 py-1 rounded-lg text-xs">
+                                                    {user.ncs}
+                                                </span>
                                             </td>
-                                            <td style={{ ...styles.td, fontWeight: '600', color: '#334155' }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <div style={{
-                                                        width: '26px',
-                                                        height: '26px',
-                                                        borderRadius: '50%',
-                                                        background: 'linear-gradient(135deg, #10b981, #14b8a6)',
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        color: 'white',
-                                                        fontSize: '11px',
-                                                        fontWeight: '700',
-                                                        flexShrink: 0,
-                                                    }}>
+                                            <td className="px-5 py-3.5">
+                                                <div className="flex items-center gap-2">
+                                                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white text-[10px] font-bold shrink-0">
                                                         {user.nama?.[0]?.toUpperCase() || '?'}
                                                     </div>
-                                                    {user.nama}
+                                                    <span className="text-slate-700 font-semibold text-sm">{user.nama}</span>
                                                 </div>
                                             </td>
-                                            <td style={styles.td}>
-                                                <span style={{
-                                                    ...styles.badgeRole,
-                                                    color: user.role === 'admin' ? '#7c3aed' : '#059669',
-                                                    backgroundColor: user.role === 'admin' ? '#f5f3ff' : '#d1fae5',
-                                                    border: user.role === 'admin' ? '1px solid #ddd6fe' : '1px solid #a7f3d0',
-                                                }}>
+                                            <td className="px-5 py-3.5">
+                                                <span className={`inline-block font-semibold px-2.5 py-1 rounded-lg text-xs ${
+                                                    user.role === 'admin' 
+                                                        ? 'text-purple-700 bg-purple-50 border border-purple-200' 
+                                                        : 'text-primary bg-primary-light border border-primary'
+                                                }`}>
                                                     {user.role}
                                                 </span>
                                             </td>
-                                            <td style={styles.td}>
-                                                <button
-                                                    onClick={() => handleEdit(user)}
-                                                    style={styles.btnEdit}
-                                                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#dbeafe'; }}
-                                                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#eff6ff'; }}
-                                                >
-                                                    Edit
-                                                </button>
-                                                <button
-                                                    onClick={() => handleDelete(user.id)}
-                                                    disabled={deletingId === user.id}
-                                                    style={{ ...styles.btnDeleteSm, opacity: deletingId === user.id ? 0.5 : 1 }}
-                                                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = '#fee2e2'; }}
-                                                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = '#fef2f2'; }}
-                                                >
-                                                    Hapus
-                                                </button>
+                                            <td className="px-5 py-3.5">
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => handleEdit(user)}
+                                                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-200 text-xs font-semibold hover:bg-blue-100 transition-all"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(user.id)}
+                                                        disabled={deletingId === user.id}
+                                                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-50 text-red-500 border border-red-200 text-xs font-semibold hover:bg-red-100 transition-all disabled:opacity-50"
+                                                    >
+                                                        Hapus
+                                                    </button>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))
@@ -672,7 +511,7 @@ function OperatorPage() {
                     </div>
                 </div>
 
-                <footer style={{ marginTop: '32px', textAlign: 'center', fontSize: '12px', color: '#94a3b8', fontWeight: '500' }}>
+                <footer className="mt-8 text-center text-xs text-slate-400 font-medium">
                     E-Logger System · {new Date().getFullYear()} · Manajemen Operator
                 </footer>
             </div>

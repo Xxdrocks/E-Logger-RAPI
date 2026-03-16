@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import ScheduleCard from './ScheduleCard';
 import ScheduleModal from './ScheduleModal';
 
 function SchedulePage() {
@@ -51,14 +50,23 @@ function SchedulePage() {
         fetchSchedules();
     };
 
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('id-ID', { 
+            day: '2-digit', 
+            month: 'short', 
+            year: 'numeric' 
+        });
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-primary-light via-secondary-light to-accent-light py-10 px-4">
             <div className="max-w-6xl mx-auto">
                 <div className="flex justify-between items-center mb-8">
-                    {/* <div>
-                        <h1 className="text-4xl font-bold text-slate-900 mb-2">Jadwal Kegiatan</h1>
-                        <p className="text-slate-600">Kelola jadwal kegiatan dan acara RAPI</p>
-                    </div> */}
+                    <div>
+                        <h1 className="text-4xl font-bold text-slate-900 mb-2">Jadwal NCS On Duty</h1>
+                        <p className="text-slate-600">Kelola jadwal kegiatan dan NCS berikutnya</p>
+                    </div>
                     <button
                         onClick={handleAdd}
                         className="px-6 py-3 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-semibold hover:shadow-lg transition-all duration-200"
@@ -82,15 +90,54 @@ function SchedulePage() {
                         </button>
                     </div>
                 ) : (
-                    <div className="space-y-4">
-                        {schedules.map((schedule) => (
-                            <ScheduleCard
-                                key={schedule.id}
-                                schedule={schedule}
-                                onEdit={handleEdit}
-                                onDelete={handleDelete}
-                            />
-                        ))}
+                    <div className="bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-xl overflow-hidden">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="bg-slate-50/80 border-b border-slate-100">
+                                        <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">No</th>
+                                        <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">Tanggal</th>
+                                        <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">Jam</th>
+                                        <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">Judul</th>
+                                        <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">10-28</th>
+                                        <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">Nama</th>
+                                        <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-50">
+                                    {schedules.map((schedule, idx) => (
+                                        <tr key={schedule.id} className="hover:bg-primary-light/30 transition-colors">
+                                            <td className="px-5 py-3.5 text-slate-400 text-xs">{idx + 1}</td>
+                                            <td className="px-5 py-3.5 text-slate-700 font-semibold">{formatDate(schedule.event_date)}</td>
+                                            <td className="px-5 py-3.5 text-slate-600">{schedule.event_time || '-'}</td>
+                                            <td className="px-5 py-3.5 text-slate-700 font-semibold">{schedule.title}</td>
+                                            <td className="px-5 py-3.5">
+                                                <span className="inline-block font-mono font-bold text-primary bg-primary-light border border-primary px-2.5 py-1 rounded-lg text-xs">
+                                                    {schedule.pencatat_ncs || '-'}
+                                                </span>
+                                            </td>
+                                            <td className="px-5 py-3.5 text-slate-600 text-sm">{schedule.pencatat_nama || '-'}</td>
+                                            <td className="px-5 py-3.5">
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => handleEdit(schedule)}
+                                                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 border border-blue-200 text-xs font-semibold hover:bg-blue-100 transition-all"
+                                                    >
+                                                        Edit
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDelete(schedule.id)}
+                                                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-50 text-red-500 border border-red-200 text-xs font-semibold hover:bg-red-100 transition-all"
+                                                    >
+                                                        Hapus
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 )}
             </div>

@@ -2,25 +2,35 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
 function ScheduleModal({ schedule, onClose, onSave }) {
-    const [formData, setFormData] = useState({
+    const [form, setForm] = useState({
         title: '',
         description: '',
         location: '',
         event_date: '',
         event_time: '',
+        pencatat_ncs: '',
+        pencatat_nama: '',
+        image: null
     });
-    const [image, setImage] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
-    const [loading, setLoading] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const token = localStorage.getItem('token')
+    
+    // Pencatat autocomplete
+    const [pencatatSuggestions, setPencatatSuggestions] = useState([]);
+    const [showPencatatSuggestions, setShowPencatatSuggestions] = useState(false);
 
     useEffect(() => {
         if (schedule) {
-            setFormData({
+            setForm({
                 title: schedule.title || '',
                 description: schedule.description || '',
                 location: schedule.location || '',
                 event_date: schedule.event_date || '',
                 event_time: schedule.event_time || '',
+                pencatat_ncs: schedule.pencatat_ncs || '',
+                pencatat_nama: schedule.pencatat_nama || '',
+                image: null
             });
             if (schedule.image) {
                 setImagePreview(`http://127.0.0.1:8000/storage/${schedule.image}`);
@@ -28,178 +38,226 @@ function ScheduleModal({ schedule, onClose, onSave }) {
         }
     }, [schedule]);
 
-    const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
-        });
+    const handlePencatatNcsChange = async (e) => {
+        const value = e.target.value;
+        setForm({ ...form, pencatat_ncs: value, pencatat_nama: '' });
+
+        if (value.length >= 2) {
+            try {
+                const res = await axios.get(`http://127.0.0.1:8000/api/logs/search-ncs?q=${value}`);
+                setPencatatSuggestions(res.data);
+                setShowPencatatSuggestions(true);
+            } catch (err) {
+                setPencatatSuggestions([]);
+            }
+        } else {
+            setPencatatSuggestions([]);
+            setShowPencatatSuggestions(false);
+        }
+    };
+
+    const handleSelectPencatat = (user) => {
+        setForm({ ...form, pencatat_ncs: user.ncs, pencatat_nama: user.nama });
+        setPencatatSuggestions([]);
+        setShowPencatatSuggestions(false);
     };
 
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setImage(file);
+            setForm({ ...form, image: file });
             setImagePreview(URL.createObjectURL(file));
         }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setLoading(true);
-
-        const data = new FormData();
-        data.append('title', formData.title);
-        data.append('description', formData.description);
-        data.append('location', formData.location);
-        data.append('event_date', formData.event_date);
-        data.append('event_time', formData.event_time);
-        if (image) {
-            data.append('image', image);
-        }
+        setSubmitting(true);
 
         try {
+            const formData = new FormData();
+            formData.append('title', form.title);
+            formData.append('description', form.description);
+            formData.append('location', form.location);
+            formData.append('event_date', form.event_date);
+            formData.append('event_time', form.event_time);
+            formData.append('pencatat_ncs', form.pencatat_ncs);
+            formData.append('pencatat_nama', form.pencatat_nama);
+            if (form.image) {
+                formData.append('image', form.image);
+            }
+
             if (schedule) {
-                data.append('_method', 'PUT');
-                await axios.post(`http://127.0.0.1:8000/api/schedules/${schedule.id}`, data, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
+                formData.append('_method', 'PUT');
+                await axios.post(`http://127.0.0.1:8000/api/schedules/${schedule.id}`, formData, {
+                    headers: { 'Content-Type': 'multipart/form-data', 'Authorization': `Bearer ${token}` }
                 });
             } else {
-                await axios.post('http://127.0.0.1:8000/api/schedules', data, {
-                    headers: { 'Content-Type': 'multipart/form-data' }
+                await axios.post('http://127.0.0.1:8000/api/schedules', formData, {
+                    headers: { 
+                        Authorization: `Bearer ${token}`
+                     }
                 });
             }
+
             onSave();
         } catch (error) {
             console.error('Error saving schedule:', error);
             alert('Gagal menyimpan jadwal');
         } finally {
-            setLoading(false);
+            setSubmitting(false);
         }
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                <div className="sticky top-0 bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center">
-                    <h2 className="text-2xl font-bold text-slate-900">
-                        {schedule ? 'Edit Jadwal' : 'Tambah Jadwal'}
-                    </h2>
-                    <button
-                        onClick={onClose}
-                        className="text-slate-400 hover:text-slate-600 transition-colors"
-                    >
-                        <span className="text-2xl">&times;</span>
-                    </button>
-                </div>
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl p-8 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
+                <h2 className="text-2xl font-bold text-slate-900 mb-6">
+                    {schedule ? 'Edit Jadwal' : 'Tambah Jadwal Baru'}
+                </h2>
 
-                <form onSubmit={handleSubmit} className="p-6 space-y-4">
-                    <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2">
-                            Judul Kegiatan
-                        </label>
-                        <input
-                            type="text"
-                            name="title"
-                            value={formData.title}
-                            onChange={handleChange}
-                            required
-                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary-light outline-none transition-all"
-                            placeholder="Contoh: Pertemuan Rutin Bulanan"
-                        />
-                    </div>
+                <form onSubmit={handleSubmit}>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                        <div className="sm:col-span-2">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
+                                Judul Kegiatan
+                            </label>
+                            <input
+                                type="text"
+                                value={form.title}
+                                onChange={(e) => setForm({ ...form, title: e.target.value })}
+                                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm outline-none focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary-light"
+                                placeholder="Contoh: Rapat Bulanan RAPI"
+                                required
+                            />
+                        </div>
 
-                    <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2">
-                            Deskripsi
-                        </label>
-                        <textarea
-                            name="description"
-                            value={formData.description}
-                            onChange={handleChange}
-                            rows="3"
-                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary-light outline-none transition-all resize-none"
-                            placeholder="Deskripsi singkat kegiatan..."
-                        />
-                    </div>
+                        <div className="sm:col-span-2">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
+                                Deskripsi
+                            </label>
+                            <textarea
+                                value={form.description}
+                                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm outline-none focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary-light"
+                                rows="3"
+                                placeholder="Deskripsi kegiatan..."
+                            />
+                        </div>
 
-                    <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2">
-                            Lokasi
-                        </label>
-                        <input
-                            type="text"
-                            name="location"
-                            value={formData.location}
-                            onChange={handleChange}
-                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary-light outline-none transition-all"
-                            placeholder="Contoh: Sekretariat RAPI"
-                        />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
                                 Tanggal
                             </label>
                             <input
                                 type="date"
-                                name="event_date"
-                                value={formData.event_date}
-                                onChange={handleChange}
+                                value={form.event_date}
+                                onChange={(e) => setForm({ ...form, event_date: e.target.value })}
+                                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm outline-none focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary-light"
                                 required
-                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary-light outline-none transition-all"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-semibold text-slate-700 mb-2">
-                                Waktu
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
+                                Jam
                             </label>
                             <input
                                 type="time"
-                                name="event_time"
-                                value={formData.event_time}
-                                onChange={handleChange}
-                                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary-light outline-none transition-all"
+                                value={form.event_time}
+                                onChange={(e) => setForm({ ...form, event_time: e.target.value })}
+                                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm outline-none focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary-light"
                             />
+                        </div>
+
+                        <div className="relative">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
+                                10-28 Pencatat Berikutnya
+                            </label>
+                            <input
+                                type="text"
+                                value={form.pencatat_ncs}
+                                onChange={handlePencatatNcsChange}
+                                onFocus={() => { if (pencatatSuggestions.length > 0) setShowPencatatSuggestions(true); }}
+                                onBlur={() => setTimeout(() => setShowPencatatSuggestions(false), 200)}
+                                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm outline-none focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary-light uppercase"
+                                placeholder="Ketik NCS..."
+                            />
+                            {showPencatatSuggestions && pencatatSuggestions.length > 0 && (
+                                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-primary rounded-xl shadow-2xl z-50 overflow-hidden">
+                                    {pencatatSuggestions.map((user) => (
+                                        <div
+                                            key={user.ncs}
+                                            onPointerDown={(e) => {
+                                                e.preventDefault();
+                                                handleSelectPencatat(user);
+                                            }}
+                                            className="flex items-center justify-between px-3.5 py-2.5 cursor-pointer hover:bg-primary-light border-b border-slate-50 last:border-b-0"
+                                        >
+                                            <span className="font-bold text-primary font-mono text-sm">{user.ncs}</span>
+                                            <span className="text-slate-400 text-xs">{user.nama}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
+                                Nama Pencatat
+                            </label>
+                            <input
+                                type="text"
+                                value={form.pencatat_nama}
+                                readOnly
+                                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-100 text-slate-600 text-sm outline-none cursor-not-allowed"
+                                placeholder="Otomatis dari NCS"
+                            />
+                        </div>
+
+                        <div className="sm:col-span-2">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
+                                Lokasi
+                            </label>
+                            <input
+                                type="text"
+                                value={form.location}
+                                onChange={(e) => setForm({ ...form, location: e.target.value })}
+                                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm outline-none focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary-light"
+                                placeholder="Contoh: Sekretariat RAPI Jakarta"
+                            />
+                        </div>
+
+                        <div className="sm:col-span-2">
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
+                                Gambar
+                            </label>
+                            <input
+                                type="file"
+                                accept="image/jpeg,image/png,image/jpg,image/webp"
+                                onChange={handleImageChange}
+                                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm outline-none focus:border-primary focus:bg-white"
+                            />
+                            {imagePreview && (
+                                <img src={imagePreview} alt="Preview" className="mt-3 w-full h-48 object-cover rounded-xl" />
+                            )}
                         </div>
                     </div>
 
-                    <div>
-                        <label className="block text-sm font-semibold text-slate-700 mb-2">
-                            Gambar
-                        </label>
-                        <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleImageChange}
-                            className="w-full px-4 py-2.5 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary-light outline-none transition-all"
-                        />
-                        {imagePreview && (
-                            <div className="mt-3">
-                                <img
-                                    src={imagePreview}
-                                    alt="Preview"
-                                    className="w-full h-48 object-cover rounded-xl"
-                                />
-                            </div>
-                        )}
-                    </div>
-
-                    <div className="flex gap-3 pt-4">
+                    <div className="flex items-center gap-3 justify-end mt-6">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="flex-1 px-6 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-all"
+                            className="px-5 py-2.5 rounded-xl bg-slate-100 text-slate-600 text-sm font-semibold hover:bg-slate-200 transition-all"
                         >
                             Batal
                         </button>
                         <button
                             type="submit"
-                            disabled={loading}
-                            className="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-semibold hover:shadow-lg transition-all disabled:opacity-50"
+                            disabled={submitting}
+                            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-white text-sm font-semibold shadow-md hover:shadow-lg transition-all disabled:opacity-50"
                         >
-                            {loading ? 'Menyimpan...' : 'Simpan'}
+                            {submitting ? 'Menyimpan...' : 'Simpan'}
                         </button>
                     </div>
                 </form>

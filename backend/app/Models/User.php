@@ -14,8 +14,29 @@ class User extends Authenticatable
         'ncs',
         'nama',
         'role',
+        'points',
+        'total_as_pencatat',
+        'total_as_participant',
+        'points_last_updated',
     ];
 
+     protected $casts = [
+        'points' => 'integer',
+        'total_as_pencatat' => 'integer',
+        'total_as_participant' => 'integer',
+        'points_last_updated' => 'datetime',
+    ];
+
+    public function logs()
+    {
+        return $this->hasMany(Log::class, 'ncs_1028', 'ncs');
+    }
+
+    public function logsAsPencatat()
+    {
+        return $this->hasMany(Log::class, 'pencatat_ncs', 'ncs');
+    }
+    
     public function isAdmin(): bool
     {
         return $this->role === 'admin';

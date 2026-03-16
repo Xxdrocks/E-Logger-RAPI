@@ -42,6 +42,12 @@ function Footer() {
                         Made with love by <span className="text-primary font-semibold">Winata</span>
                     </p>
                 </div>
+
+                <div>
+                    <p>
+                        Versi 1.0
+                    </p>
+                </div>
             </div>
         </footer>
     );

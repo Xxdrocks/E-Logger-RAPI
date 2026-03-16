@@ -19,6 +19,8 @@ function LogForm({ refresh, session, setSession }) {
     const [pencatatSuggestions, setPencatatSuggestions] = useState([]);
     const [showPencatatSuggestions, setShowPencatatSuggestions] = useState(false);
 
+    const [notes, setNotes] = useState('');
+
     const extractZzd = (ncs) => {
         if (!ncs || ncs.length < 4) return '';
         return ncs.slice(2, 4);
@@ -53,10 +55,11 @@ function LogForm({ refresh, session, setSession }) {
         if (!sessionDraft.frequency || !sessionDraft.pencatat_ncs) return;
         setSession({ ...sessionDraft });
         setEditSession(false);
+        setNotes(''); // Clear notes saat mulai sesi baru
     };
 
     const handleNcsChange = async (e) => {
-        const value = e.target.value;
+        const value = e.target.value.toUpperCase();
         setNcs(value);
         setSelectedOperator(null);
 
@@ -75,13 +78,23 @@ function LogForm({ refresh, session, setSession }) {
     };
 
     const handleNcsKeyDown = async (e) => {
-        if (e.key === 'Enter' && ncs && !selectedOperator) {
+        if (e.key === 'Enter') {
             e.preventDefault();
+            
+            if (!ncs) return;
+
             try {
                 const res = await axios.get(`http://127.0.0.1:8000/api/logs/search-ncs?q=${ncs}`);
+                
+                // Cari exact match atau closest match
                 const exactMatch = res.data.find(op => op.ncs.toLowerCase() === ncs.toLowerCase());
+                const partialMatch = res.data.find(op => op.ncs.toLowerCase().includes(ncs.toLowerCase()));
+                
                 if (exactMatch) {
                     handleSelectSuggestion(exactMatch);
+                } else if (partialMatch) {
+                    // Auto-fill dengan closest match (contoh: "vag" → "JZ09VAG")
+                    handleSelectSuggestion(partialMatch);
                 }
             } catch (err) {
                 console.error(err);
@@ -124,6 +137,27 @@ function LogForm({ refresh, session, setSession }) {
             }
         } finally {
             setLoading(false);
+        }
+    };
+
+    // Handle notes dengan auto-list saat ketik "-" dan Enter
+    const handleNotesKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            const cursorPos = e.target.selectionStart;
+            const currentLine = notes.substring(0, cursorPos).split('\n').pop();
+            
+            // Jika line terakhir dimulai dengan "-", auto-tambah "-" di line baru
+            if (currentLine.trim().startsWith('-')) {
+                e.preventDefault();
+                const beforeCursor = notes.substring(0, cursorPos);
+                const afterCursor = notes.substring(cursorPos);
+                setNotes(beforeCursor + '\n- ' + afterCursor);
+                
+                // Set cursor position setelah "- "
+                setTimeout(() => {
+                    e.target.selectionStart = e.target.selectionEnd = cursorPos + 3;
+                }, 0);
+            }
         }
     };
 
@@ -173,7 +207,7 @@ function LogForm({ refresh, session, setSession }) {
                                     onChange={handlePencatatNcsChange}
                                     onFocus={() => { if (pencatatSuggestions.length > 0) setShowPencatatSuggestions(true); }}
                                     onBlur={() => setTimeout(() => setShowPencatatSuggestions(false), 200)}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-slate-800 text-sm placeholder:text-slate-300 outline-none transition-all duration-200 focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary-light"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-slate-800 text-sm placeholder:text-slate-300 outline-none transition-all duration-200 focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary-light uppercase"
                                     required
                                 />
                                 {showPencatatSuggestions && pencatatSuggestions.length > 0 && (
@@ -247,36 +281,56 @@ function LogForm({ refresh, session, setSession }) {
 
             {session && !editSession && (
                 <>
-                    <div className="flex items-center justify-between px-7 py-4 bg-primary-light/60 border-b border-primary/10">
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-4 sm:px-7 py-4 bg-primary-light/60 border-b border-primary/10">
                         <div className="flex items-center gap-3">
                             <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-md shadow-primary/30 animate-pulse" />
                             <div className="flex items-center gap-2 flex-wrap">
                                 <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Sesi Aktif</span>
-                                <span className="inline-flex items-center gap-1.5 bg-white border border-primary text-primary font-bold font-mono text-xs px-3 py-1 rounded-lg shadow-sm">
+                                <span className="inline-flex items-center gap-1.5 bg-white border border-primary text-primary font-bold font-mono text-xs px-2 sm:px-3 py-1 rounded-lg shadow-sm">
                                     <img src="/images/logger.png" alt="Frequency" className="w-3 h-3 object-contain" />
-                                    {session.frequency}
+                                    <span className="hidden xs:inline">{session.frequency}</span>
+                                    <span className="xs:hidden">{session.frequency.slice(0, 6)}</span>
                                 </span>
-                                <span className="inline-flex items-center gap-1.5 bg-white border border-secondary text-secondary font-bold font-mono text-xs px-3 py-1 rounded-lg shadow-sm">
+                                <span className="inline-flex items-center gap-1.5 bg-white border border-secondary text-secondary font-bold font-mono text-xs px-2 sm:px-3 py-1 rounded-lg shadow-sm">
                                     <img src="/images/ncspencatat.png" alt="NCS Pencatat" className="w-3 h-3 object-contain" />
                                     {session.pencatat_ncs}
                                 </span>
                                 {session.keterangan && (
-                                    <span className="inline-flex items-center gap-1.5 bg-white border border-slate-200 text-slate-600 text-xs px-3 py-1 rounded-lg shadow-sm">
+                                    <span className="inline-flex items-center gap-1.5 bg-white border border-slate-200 text-slate-600 text-xs px-2 sm:px-3 py-1 rounded-lg shadow-sm">
                                         <img src="/images/keterangan.png" alt="Keterangan" className="w-3 h-3 object-contain" />
-                                        {session.keterangan}
+                                        <span className="max-w-[80px] sm:max-w-none truncate">{session.keterangan}</span>
                                     </span>
                                 )}
                             </div>
                         </div>
                         <button
                             onClick={() => { setEditSession(true); setSessionDraft({ ...session }); }}
-                            className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-primary transition-colors duration-150"
+                            className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-primary transition-colors duration-150 whitespace-nowrap"
                         >
                             <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
-                            Ganti Sesi
+                            <span className="hidden sm:inline">Mulai Sesi Check in Baru</span>
+                            <span className="sm:hidden">Mulai Sesi Check in Baru</span>
                         </button>
+                    </div>
+
+                    <div className="px-7 pt-6 pb-4 border-b border-slate-100">
+                        <div className="flex items-center gap-2 mb-3">
+                            <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">
+                                Catatan Peserta 
+                            </label>
+                        </div>
+                        <textarea
+                            value={notes}
+                            onChange={(e) => setNotes(e.target.value)}
+                            onKeyDown={handleNotesKeyDown}
+                            className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-amber-50/50 text-slate-700 text-sm placeholder:text-slate-400 outline-none transition-all duration-200 focus:border-amber-400 focus:bg-amber-50 focus:ring-2 focus:ring-amber-100 font-mono resize-none"
+                            rows="4"
+                        />
                     </div>
 
                     <form onSubmit={handleSubmit} className="p-7 relative">
@@ -294,7 +348,6 @@ function LogForm({ refresh, session, setSession }) {
                             </div>
                             <div>
                                 <p className="text-sm font-bold text-slate-800 m-0 leading-tight">Input NCS</p>
-                                <p className="text-xs text-slate-400 mt-0.5">Ketik NCS, nama akan terisi otomatis</p>
                             </div>
                         </div>
 
@@ -305,13 +358,13 @@ function LogForm({ refresh, session, setSession }) {
                                     10/28
                                 </label>
                                 <input
-                                    placeholder="Ketik NCS... contoh: VAG"
+                                    placeholder="Ketik VAG → Enter"
                                     value={ncs}
                                     onChange={handleNcsChange}
                                     onKeyDown={handleNcsKeyDown}
                                     onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
                                     onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-slate-800 text-sm placeholder:text-slate-300 outline-none transition-all duration-200 focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary-light"
+                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-slate-800 text-sm placeholder:text-slate-300 outline-none transition-all duration-200 focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary-light uppercase font-mono"
                                     autoFocus
                                 />
                                 {showSuggestions && suggestions.length > 0 && (

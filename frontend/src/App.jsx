@@ -11,8 +11,7 @@ import LogPage from './features/log/LogPage';
 import OperatorPage from './features/operator/OperatorPage';
 import SchedulePage from './features/schedule/SchedulePage';
 import ContactPage from './features/contact/ContactPage';
-
-
+import PointPage from './features/points/PointsPage';
 
 function App() {
   return (
@@ -40,6 +39,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <SchedulePage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/points"
+                element={
+                  <ProtectedRoute>
+                    <PointPage />
                   </ProtectedRoute>
                 }
               />

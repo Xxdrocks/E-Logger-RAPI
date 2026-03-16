@@ -1,67 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 function HomePage() {
     const [currentSlide, setCurrentSlide] = useState(0);
+    const [schedules, setSchedules] = useState([]);
+    const [stats, setStats] = useState({
+        totalUsers: 0,
+     
+    });
 
     const heroImages = [
-        '/images/gallery-1.jpeg',
-        '/images/gallery-2.png',
-        '/images/gallery-1.jpeg',
-    ];
-
-    const upcomingEvents = [
-        {
-            date: '15',
-            month: 'Mar',
-            title: 'Pertemuan Rutin Bulanan',
-            time: '19:00 WIB',
-            location: 'Sekretariat RAPI',
-            description: 'Pertemuan rutin anggota untuk membahas program kerja dan kegiatan mendatang',
-        },
-        {
-            date: '22',
-            month: 'Mar',
-            title: 'Pelatihan Morse Code',
-            time: '14:00 WIB',
-            location: 'Online via Zoom',
-            description: 'Workshop morse code untuk pemula hingga tingkat lanjut',
-        },
-        {
-            date: '05',
-            month: 'Apr',
-            title: 'Fox Hunting Competition',
-            time: '08:00 WIB',
-            location: 'Lapangan Merdeka',
-            description: 'Lomba fox hunting terbuka untuk umum dengan hadiah menarik',
-        },
-    ];
-
-    const recentActivities = [
-        {
-            title: 'Bakti Sosial Bencana Alam',
-            date: '28 Februari 2026',
-            image: '/images/activity-1.jpg',
-            description: 'Tim komunikasi RAPI membantu korban bencana dengan menyediakan layanan komunikasi darurat',
-        },
-        {
-            title: 'Perayaan HUT RAPI ke-70',
-            date: '15 Februari 2026',
-            image: '/images/activity-2.jpg',
-            description: 'Peringatan hari jadi RAPI dengan berbagai lomba dan kegiatan kekeluargaan',
-        },
-        {
-            title: 'Workshop Teknologi Radio Digital',
-            date: '10 Februari 2026',
-            image: '/images/activity-3.jpg',
-            description: 'Pelatihan penggunaan teknologi radio digital untuk anggota RAPI',
-        },
-    ];
-
-    const stats = [
-        { value: '500+', label: 'Anggota Aktif' },
-        { value: '50+', label: 'Kegiatan/Tahun' },
-        { value: '70', label: 'Tahun Berdiri' },
-        { value: '24/7', label: 'Siaga Darurat' },
+        '/images/background-rapi.png',
     ];
 
     useEffect(() => {
@@ -70,6 +20,64 @@ function HomePage() {
         }, 5000);
         return () => clearInterval(timer);
     }, []);
+
+    useEffect(() => {
+        fetchStats();
+        fetchSchedules();
+    }, []);
+
+    const fetchStats = async () => {
+        try {
+            const [usersRes, logsRes] = await Promise.all([
+                axios.get('http://127.0.0.1:8000/api/users'),
+                axios.get('http://127.0.0.1:8000/api/logs'),
+            ]);
+
+            const logs = logsRes.data.data || [];
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const logsThisYear = logs.filter(log => {
+                if (!log.created_at) return false;
+                return new Date(log.created_at).getFullYear() === currentYear;
+            }).length;
+
+            setStats({
+                totalUsers: usersRes.data.length,
+            });
+        } catch (error) {
+            console.error('Error fetching stats:', error);
+        }
+    };
+
+    const fetchSchedules = async () => {
+        try {
+            const res = await axios.get('http://127.0.0.1:8000/api/schedules');
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            const upcoming = res.data
+                .filter(s => new Date(s.event_date) >= today)
+                .sort((a, b) => new Date(a.event_date) - new Date(b.event_date))
+                .slice(0, 3);
+            setSchedules(upcoming);
+        } catch (error) {
+            console.error('Error fetching schedules:', error);
+        }
+    };
+
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('id-ID', { 
+            day: '2-digit', 
+            month: 'short', 
+            year: 'numeric' 
+        });
+    };
+
+    const statsData = [
+        { value: `${stats.totalUsers}+`, label: 'Anggota Aktif' },
+ 
+    ];
 
     return (
         <div className="min-h-screen">
@@ -91,7 +99,6 @@ function HomePage() {
                     <h1 className="text-4xl md:text-6xl font-extrabold text-center mb-4 tracking-tight">
                         Radio Antar Republik Indonesia
                     </h1>
-                    
                 </div>
 
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
@@ -110,8 +117,8 @@ function HomePage() {
             <div className="bg-gradient-to-br from-primary-light via-secondary-light to-accent-light py-16 px-4">
                 <div className="max-w-7xl mx-auto">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                        {stats.map((stat, idx) => (
-                            <div key={idx} className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 text-center shadow-md">
+                        {statsData.map((stat, idx) => (
+                            <div key={idx} className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 text-center shadow-md border border-slate-200">
                                 <p className="text-3xl md:text-4xl font-extrabold text-primary mb-2">{stat.value}</p>
                                 <p className="text-sm text-slate-600 font-medium">{stat.label}</p>
                             </div>
@@ -120,38 +127,64 @@ function HomePage() {
                 </div>
             </div>
 
-            <div className="bg-gradient-to-br from-primary-light to-secondary-light py-16 px-4">
+            <div className="bg-gradient-to-br from-secondary-light to-accent-light py-16 px-4">
                 <div className="max-w-7xl mx-auto">
-                    <div className="text-center mb-12">
-                        <h2 className="text-3xl md:text-5xl font-extrabold text-slate-900 mb-4">
-                            Kegiatan Terkini
-                        </h2>
-                        <p className="text-slate-600 max-w-2xl mx-auto">
-                            Dokumentasi kegiatan dan momen berharga bersama keluarga besar RAPI
-                        </p>
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                        <div>
+                            <h2 className="text-3xl md:text-5xl font-extrabold text-slate-900 mb-2">
+                                Jadwal NCS On Duty
+                            </h2>
+                        </div>
+                        <Link
+                            to="/schedule"
+                            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-white text-sm font-semibold hover:shadow-lg transition-all whitespace-nowrap"
+                        >
+                            Lihat Semua
+                        </Link>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {recentActivities.map((activity, idx) => (
-                            <div key={idx} className="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group">
-                                <div className="relative overflow-hidden h-48">
-                                    <img src={activity.image} alt={activity.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                                    <p className="absolute bottom-3 left-3 text-white text-xs font-semibold bg-primary px-3 py-1 rounded-full">
-                                        {activity.date}
-                                    </p>
-                                </div>
-                                <div className="p-6">
-                                    <h3 className="text-xl font-bold text-slate-800 mb-2">{activity.title}</h3>
-                                    <p className="text-sm text-slate-600 leading-relaxed">{activity.description}</p>
-                                </div>
+                    {schedules.length === 0 ? (
+                        <div className="bg-white/70 backdrop-blur-md rounded-2xl p-12 text-center shadow-md">
+                            <p className="text-slate-500 text-lg">Belum ada jadwal kegiatan mendatang</p>
+                        </div>
+                    ) : (
+                        <div className="bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-xl overflow-hidden">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                    <thead>
+                                        <tr className="bg-slate-50/80 border-b border-slate-100">
+                                            <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">No</th>
+                                            <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">Tanggal</th>
+                                            <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">Jam</th>
+                                            <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">Judul</th>
+                                            <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">NCS</th>
+                                            <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">Nama</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-slate-50">
+                                        {schedules.map((schedule, idx) => (
+                                            <tr key={schedule.id} className="hover:bg-primary-light/30 transition-colors">
+                                                <td className="px-5 py-3.5 text-slate-400 text-xs">{idx + 1}</td>
+                                                <td className="px-5 py-3.5 text-slate-700 font-semibold">{formatDate(schedule.event_date)}</td>
+                                                <td className="px-5 py-3.5 text-slate-600">{schedule.event_time || '-'}</td>
+                                                <td className="px-5 py-3.5 text-slate-700 font-semibold">{schedule.title}</td>
+                                                <td className="px-5 py-3.5">
+                                                    <span className="inline-block font-mono font-bold text-primary bg-primary-light border border-primary px-2.5 py-1 rounded-lg text-xs">
+                                                        {schedule.pencatat_ncs || '-'}
+                                                    </span>
+                                                </td>
+                                                <td className="px-5 py-3.5 text-slate-600 text-sm">{schedule.pencatat_nama || '-'}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
-                        ))}
-                    </div>
+                        </div>
+                    )}
                 </div>
             </div>
 
-           
+            
         </div>
     );
 }

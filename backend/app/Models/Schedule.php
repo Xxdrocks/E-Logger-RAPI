@@ -9,13 +9,17 @@ class Schedule extends Model
 {
     use SoftDeletes;
 
+    protected $table = 'schedules';
+    
     protected $fillable = [
-       'title',
+        'title',
         'description',
         'location',
         'event_date',
         'event_time',
         'image',
+        'pencatat_ncs',
+        'pencatat_nama',
     ];
 
     protected $casts = [
