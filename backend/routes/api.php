@@ -28,8 +28,9 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/logs', [LogController::class, 'store']);
         Route::post('/logs/bulk-import', [LogController::class, 'bulkImport']);
         Route::get('/logs/export', [LogController::class, 'export']);
+
+        Route::post('/logs/delete-all', [LogController::class, 'deleteAll']);
         Route::delete('/logs/{log}', [LogController::class, 'destroy']);
-        Route::delete('/logs/delete-all', [LogController::class, 'deleteAll']);
 
         Route::post('/users/bulk-import', [UserController::class, 'bulkImport']);
         Route::post('/users', [UserController::class, 'store']);

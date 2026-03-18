@@ -4,37 +4,31 @@ import axios from 'axios';
 function ScheduleModal({ schedule, onClose, onSave }) {
     const [form, setForm] = useState({
         title: '',
-        description: '',
         location: '',
         event_date: '',
         event_time: '',
         pencatat_ncs: '',
         pencatat_nama: '',
-        image: null
     });
-    const [imagePreview, setImagePreview] = useState(null);
     const [submitting, setSubmitting] = useState(false);
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('token');
     
-    // Pencatat autocomplete
     const [pencatatSuggestions, setPencatatSuggestions] = useState([]);
     const [showPencatatSuggestions, setShowPencatatSuggestions] = useState(false);
+
+    const [showLokasiSuggestions, setShowLokasiSuggestions] = useState(false);
+    const lokasiOptions = ['Barat', 'Tengah', 'Timur'];
 
     useEffect(() => {
         if (schedule) {
             setForm({
                 title: schedule.title || '',
-                description: schedule.description || '',
                 location: schedule.location || '',
                 event_date: schedule.event_date || '',
                 event_time: schedule.event_time || '',
                 pencatat_ncs: schedule.pencatat_ncs || '',
                 pencatat_nama: schedule.pencatat_nama || '',
-                image: null
             });
-            if (schedule.image) {
-                setImagePreview(`http://127.0.0.1:8000/storage/${schedule.image}`);
-            }
         }
     }, [schedule]);
 
@@ -62,41 +56,27 @@ function ScheduleModal({ schedule, onClose, onSave }) {
         setShowPencatatSuggestions(false);
     };
 
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            setForm({ ...form, image: file });
-            setImagePreview(URL.createObjectURL(file));
-        }
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSubmitting(true);
 
         try {
-            const formData = new FormData();
-            formData.append('title', form.title);
-            formData.append('description', form.description);
-            formData.append('location', form.location);
-            formData.append('event_date', form.event_date);
-            formData.append('event_time', form.event_time);
-            formData.append('pencatat_ncs', form.pencatat_ncs);
-            formData.append('pencatat_nama', form.pencatat_nama);
-            if (form.image) {
-                formData.append('image', form.image);
-            }
+            const payload = {
+                title: form.title,
+                location: form.location,
+                event_date: form.event_date,
+                event_time: form.event_time,
+                pencatat_ncs: form.pencatat_ncs,
+                pencatat_nama: form.pencatat_nama,
+            };
 
             if (schedule) {
-                formData.append('_method', 'PUT');
-                await axios.post(`http://127.0.0.1:8000/api/schedules/${schedule.id}`, formData, {
-                    headers: { 'Content-Type': 'multipart/form-data', 'Authorization': `Bearer ${token}` }
+                await axios.put(`http://127.0.0.1:8000/api/schedules/${schedule.id}`, payload, {
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
             } else {
-                await axios.post('http://127.0.0.1:8000/api/schedules', formData, {
-                    headers: { 
-                        Authorization: `Bearer ${token}`
-                     }
+                await axios.post('http://127.0.0.1:8000/api/schedules', payload, {
+                    headers: { 'Authorization': `Bearer ${token}` }
                 });
             }
 
@@ -132,18 +112,6 @@ function ScheduleModal({ schedule, onClose, onSave }) {
                             />
                         </div>
 
-                        <div className="sm:col-span-2">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
-                                Deskripsi
-                            </label>
-                            <textarea
-                                value={form.description}
-                                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm outline-none focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary-light"
-                                rows="3"
-                                placeholder="Deskripsi kegiatan..."
-                            />
-                        </div>
 
                         <div>
                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
@@ -172,7 +140,7 @@ function ScheduleModal({ schedule, onClose, onSave }) {
 
                         <div className="relative">
                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
-                                10-28 Pencatat Berikutnya
+                                NCS Pencatat Berikutnya
                             </label>
                             <input
                                 type="text"
@@ -215,33 +183,48 @@ function ScheduleModal({ schedule, onClose, onSave }) {
                             />
                         </div>
 
-                        <div className="sm:col-span-2">
+                        <div className="sm:col-span-2 relative">
                             <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
                                 Lokasi
                             </label>
-                            <input
-                                type="text"
-                                value={form.location}
-                                onChange={(e) => setForm({ ...form, location: e.target.value })}
-                                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm outline-none focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary-light"
-                                placeholder="Contoh: Sekretariat RAPI Jakarta"
-                            />
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    value={form.location}
+                                    onChange={(e) => setForm({ ...form, location: e.target.value })}
+                                    onFocus={() => setShowLokasiSuggestions(true)}
+                                    onBlur={() => setTimeout(() => setShowLokasiSuggestions(false), 200)}
+                                    className="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm outline-none focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary-light"
+                                    placeholder="Contoh: Barat"
+                                />
+                                <img 
+                                    src="/images/arrow-down.png" 
+                                    alt="dropdown" 
+                                    className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 cursor-pointer transition-transform duration-200 ${
+                                        showLokasiSuggestions ? 'rotate-180' : ''
+                                    }`}
+                                    onClick={() => setShowLokasiSuggestions(!showLokasiSuggestions)}
+                                />
+                                {showLokasiSuggestions && (
+                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-primary rounded-xl shadow-2xl z-50 overflow-hidden">
+                                        {lokasiOptions.map((lok, idx) => (
+                                            <div
+                                                key={idx}
+                                                onPointerDown={(e) => {
+                                                    e.preventDefault();
+                                                    setForm({ ...form, location: lok });
+                                                    setShowLokasiSuggestions(false);
+                                                }}
+                                                className="px-3.5 py-2.5 cursor-pointer hover:bg-primary-light border-b border-slate-50 last:border-b-0 transition-colors duration-100"
+                                            >
+                                                <span className="font-bold text-primary">{lok}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
-                        <div className="sm:col-span-2">
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
-                                Gambar
-                            </label>
-                            <input
-                                type="file"
-                                accept="image/jpeg,image/png,image/jpg,image/webp"
-                                onChange={handleImageChange}
-                                className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm outline-none focus:border-primary focus:bg-white"
-                            />
-                            {imagePreview && (
-                                <img src={imagePreview} alt="Preview" className="mt-3 w-full h-48 object-cover rounded-xl" />
-                            )}
-                        </div>
                     </div>
 
                     <div className="flex items-center gap-3 justify-end mt-6">

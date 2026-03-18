@@ -7,7 +7,8 @@ function HomePage() {
     const [schedules, setSchedules] = useState([]);
     const [stats, setStats] = useState({
         totalUsers: 0,
-     
+        uniqueParticipants: 0, 
+        totalCheckIns: 0,      
     });
 
     const heroImages = [
@@ -34,15 +35,15 @@ function HomePage() {
             ]);
 
             const logs = logsRes.data.data || [];
-            const now = new Date();
-            const currentYear = now.getFullYear();
-            const logsThisYear = logs.filter(log => {
-                if (!log.created_at) return false;
-                return new Date(log.created_at).getFullYear() === currentYear;
-            }).length;
+            const uniqueNCS = new Set(
+                logs.map(log => log.ncs_1028).filter(ncs => ncs && ncs.trim() !== '')
+            );
+            const totalCheckIns = logs.length;
 
             setStats({
                 totalUsers: usersRes.data.length,
+                uniqueParticipants: uniqueNCS.size,
+                totalCheckIns: totalCheckIns,
             });
         } catch (error) {
             console.error('Error fetching stats:', error);
@@ -76,7 +77,8 @@ function HomePage() {
 
     const statsData = [
         { value: `${stats.totalUsers}+`, label: 'Anggota Aktif' },
- 
+        { value: `${stats.uniqueParticipants}+`, label: 'NCS Aktif' },
+        { value: `${stats.totalCheckIns}+`, label: 'Total Check In' }, 
     ];
 
     return (
@@ -114,77 +116,117 @@ function HomePage() {
                 </div>
             </div>
 
-            <div className="bg-gradient-to-br from-primary-light via-secondary-light to-accent-light py-16 px-4">
+            {/* Stats - Mobile Optimized */}
+            <div className="bg-gradient-to-br from-primary-light via-secondary-light to-accent-light py-12 md:py-16 px-3 md:px-4">
                 <div className="max-w-7xl mx-auto">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-6">
                         {statsData.map((stat, idx) => (
-                            <div key={idx} className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 text-center shadow-md border border-slate-200">
-                                <p className="text-3xl md:text-4xl font-extrabold text-primary mb-2">{stat.value}</p>
-                                <p className="text-sm text-slate-600 font-medium">{stat.label}</p>
+                            <div key={idx} className="bg-white/80 backdrop-blur-sm rounded-xl md:rounded-2xl p-4 md:p-6 text-center shadow-md border border-slate-200">
+                                <p className="text-2xl md:text-4xl font-extrabold text-primary mb-1 md:mb-2">{stat.value}</p>
+                                <p className="text-xs md:text-sm text-slate-600 font-medium">{stat.label}</p>
                             </div>
                         ))}
                     </div>
                 </div>
             </div>
 
-            <div className="bg-gradient-to-br from-secondary-light to-accent-light py-16 px-4">
+            {/* Schedule Section */}
+            <div className="bg-gradient-to-br from-secondary-light to-accent-light py-12 md:py-16 px-3 md:px-4">
                 <div className="max-w-7xl mx-auto">
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 md:gap-4 mb-6 md:mb-8">
                         <div>
-                            <h2 className="text-3xl md:text-5xl font-extrabold text-slate-900 mb-2">
+                            <h2 className="text-2xl md:text-5xl font-extrabold text-slate-900 mb-1 md:mb-2">
                                 Jadwal NCS On Duty
                             </h2>
                         </div>
                         <Link
                             to="/schedule"
-                            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-white text-sm font-semibold hover:shadow-lg transition-all whitespace-nowrap"
+                            className="w-full sm:w-auto px-4 md:px-5 py-2 md:py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-white text-sm font-semibold hover:shadow-lg transition-all whitespace-nowrap text-center"
                         >
                             Lihat Semua
                         </Link>
                     </div>
 
                     {schedules.length === 0 ? (
-                        <div className="bg-white/70 backdrop-blur-md rounded-2xl p-12 text-center shadow-md">
-                            <p className="text-slate-500 text-lg">Belum ada jadwal kegiatan mendatang</p>
+                        <div className="bg-white/70 backdrop-blur-md rounded-xl md:rounded-2xl p-8 md:p-12 text-center shadow-md">
+                            <p className="text-slate-500 text-sm md:text-lg">Belum ada jadwal kegiatan mendatang</p>
                         </div>
                     ) : (
-                        <div className="bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-xl overflow-hidden">
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-sm">
-                                    <thead>
-                                        <tr className="bg-slate-50/80 border-b border-slate-100">
-                                            <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">No</th>
-                                            <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">Tanggal</th>
-                                            <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">Jam</th>
-                                            <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">Judul</th>
-                                            <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">NCS</th>
-                                            <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">Nama</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-50">
-                                        {schedules.map((schedule, idx) => (
-                                            <tr key={schedule.id} className="hover:bg-primary-light/30 transition-colors">
-                                                <td className="px-5 py-3.5 text-slate-400 text-xs">{idx + 1}</td>
-                                                <td className="px-5 py-3.5 text-slate-700 font-semibold">{formatDate(schedule.event_date)}</td>
-                                                <td className="px-5 py-3.5 text-slate-600">{schedule.event_time || '-'}</td>
-                                                <td className="px-5 py-3.5 text-slate-700 font-semibold">{schedule.title}</td>
-                                                <td className="px-5 py-3.5">
-                                                    <span className="inline-block font-mono font-bold text-primary bg-primary-light border border-primary px-2.5 py-1 rounded-lg text-xs">
-                                                        {schedule.pencatat_ncs || '-'}
-                                                    </span>
-                                                </td>
-                                                <td className="px-5 py-3.5 text-slate-600 text-sm">{schedule.pencatat_nama || '-'}</td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                        <>
+                            {/* Mobile Card View */}
+                            <div className="md:hidden space-y-3">
+                                {schedules.map((schedule, idx) => (
+                                    <div key={schedule.id} className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-md border border-slate-100">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center">
+                                                {idx + 1}
+                                            </span>
+                                            <h3 className="text-sm font-bold text-slate-800 flex-1 line-clamp-1">{schedule.title}</h3>
+                                        </div>
+                                        <div className="flex items-center gap-2 text-xs text-slate-500 mb-3">
+                                            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                            </svg>
+                                            <span>{formatDate(schedule.event_date)}</span>
+                                            {schedule.event_time && (
+                                                <>
+                                                    <span>•</span>
+                                                    <span>{schedule.event_time}</span>
+                                                </>
+                                            )}
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-xs text-slate-500">NCS On Duty</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-mono font-bold text-primary bg-primary-light border border-primary px-2 py-0.5 rounded-md text-xs">
+                                                    {schedule.pencatat_ncs || '-'}
+                                                </span>
+                                                <span className="text-xs text-slate-700 font-semibold max-w-[100px] truncate">
+                                                    {schedule.pencatat_nama || '-'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
-                        </div>
+
+                            {/* Desktop Table View */}
+                            <div className="hidden md:block bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-xl overflow-hidden">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-sm">
+                                        <thead>
+                                            <tr className="bg-slate-50/80 border-b border-slate-100">
+                                                <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">No</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">Tanggal</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">Jam</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">Judul</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">NCS</th>
+                                                <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">Nama</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-50">
+                                            {schedules.map((schedule, idx) => (
+                                                <tr key={schedule.id} className="hover:bg-primary-light/30 transition-colors">
+                                                    <td className="px-5 py-3.5 text-slate-400 text-xs">{idx + 1}</td>
+                                                    <td className="px-5 py-3.5 text-slate-700 font-semibold">{formatDate(schedule.event_date)}</td>
+                                                    <td className="px-5 py-3.5 text-slate-600">{schedule.event_time || '-'}</td>
+                                                    <td className="px-5 py-3.5 text-slate-700 font-semibold">{schedule.title}</td>
+                                                    <td className="px-5 py-3.5">
+                                                        <span className="inline-block font-mono font-bold text-primary bg-primary-light border border-primary px-2.5 py-1 rounded-lg text-xs">
+                                                            {schedule.pencatat_ncs || '-'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-5 py-3.5 text-slate-600 text-sm">{schedule.pencatat_nama || '-'}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </>
                     )}
                 </div>
             </div>
-
-            
         </div>
     );
 }

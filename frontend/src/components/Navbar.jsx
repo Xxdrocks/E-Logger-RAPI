@@ -63,14 +63,14 @@ function Navbar() {
             </nav>
 
             <nav className="md:hidden fixed bottom-4 left-4 right-4 z-50">
-                <div className="bg-white/30 backdrop-blur-xl border border-white/40 rounded-3xl shadow-2xl shadow-primary/10 px-1 py-2">
+                <div className="bg-white/30 backdrop-blur-xl border border-white/40 rounded-3xl shadow-2xl shadow-primary/10 px-2 py-3">
                     <div className="flex items-center justify-around gap-1">
                         {navItems.map((item) => (
                             <Link
                                 key={item.path}
                                 to={item.path}
                                 onClick={() => setActive(item.path)}
-                                className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-2xl transition-all duration-300 ${
+                                className={`flex flex-col items-center gap-1 px-3 py-2 rounded-2xl transition-all duration-300 ${
                                     active === item.path
                                         ? 'bg-white text-primary shadow-lg shadow-primary/20'
                                         : 'text-slate-700'
@@ -83,20 +83,27 @@ function Navbar() {
                                         active === item.path ? 'scale-110' : 'opacity-70'
                                     }`}
                                 />
+                                <span className={`text-[10px] font-semibold transition-all duration-300 ${
+                                    active === item.path ? 'text-primary' : 'text-slate-600'
+                                }`}>
+                                    {item.name === 'Hubungi Kami' ? 'Contact' : item.name}
+                                </span>
                             </Link>
                         ))}
                         {user && (
                             <button
                                 onClick={handleLogout}
-                                className="flex flex-col items-center gap-0.5 px-3 py-2 rounded-2xl bg-red-500 text-white"
+                                className="flex flex-col items-center gap-1 px-3 py-2 rounded-2xl bg-red-500 text-white"
                             >
-                                <span className="text-xs font-bold">OUT</span>
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                                <span className="text-[10px] font-semibold">Logout</span>
                             </button>
                         )}
                     </div>
                 </div>
             </nav>
-
         </div>
     );
 }

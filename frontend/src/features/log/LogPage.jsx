@@ -61,15 +61,15 @@ function LogPage() {
                 />
             </div>
 
-            <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-10">
-                <header className="mb-10">
-                    <div className="flex flex-row sm:flex-row items-start sm:items-center justify-between gap-5">
-                        <div className="flex items-center gap-4">
-                            <img src="/images/logo-rapi.png" alt="Logo" className="w-20" />
+            <div className="relative z-10 max-w-6xl mx-auto px-3 md:px-6 py-6 md:py-10">
+                <header className="mb-6 md:mb-10">
+                    <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-5">
+                        <div className="flex items-center gap-3 md:gap-4">
+                            <img src="/images/logo-rapi.png" alt="Logo" className="w-16 md:w-20" />
                         </div>
 
-                        <div className="flex flex-col items-start sm:items-end gap-1.5">
-                            <div className="flex items-center gap-2 bg-white/80 border border-primary/30 rounded-xl px-4 py-2 shadow-sm backdrop-blur-sm">
+                        <div className="flex flex-col items-start md:items-end gap-1.5">
+                            <div className="flex items-center gap-2 bg-white/80 border border-primary/30 rounded-xl px-3 md:px-4 py-2 shadow-sm backdrop-blur-sm">
                                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-md shadow-primary/30" />
                                 <span className="text-xs font-semibold text-slate-600">Online</span>
                                 <span className="text-slate-300">·</span>
@@ -79,14 +79,14 @@ function LogPage() {
                         </div>
                     </div>
 
-                    <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div className="mt-4 md:mt-6 grid grid-cols-2 gap-3">
                         {stats.map((stat, i) => (
-                            <div key={i} className="bg-white/70 backdrop-blur-sm border border-slate-200 rounded-2xl px-5 py-4 shadow-sm flex items-center gap-4">
-                                <div className={`w-9 h-9 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-md p-2`}>
+                            <div key={i} className="bg-white/70 backdrop-blur-sm border border-slate-200 rounded-xl md:rounded-2xl px-4 md:px-5 py-3 md:py-4 shadow-sm flex items-center gap-3 md:gap-4">
+                                <div className={`w-8 h-8 md:w-9 md:h-9 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-md p-2`}>
                                     <img src={stat.image} alt={stat.label} className="w-full h-full object-contain brightness-0 invert" />
                                 </div>
                                 <div>
-                                    <p className="text-xl font-extrabold text-slate-800">{loading ? "—" : stat.value}</p>
+                                    <p className="text-lg md:text-xl font-extrabold text-slate-800">{loading ? "—" : stat.value}</p>
                                     <p className="text-xs text-slate-500 font-medium">{stat.label}</p>
                                 </div>
                             </div>
@@ -94,13 +94,13 @@ function LogPage() {
                     </div>
                 </header>
 
-                <section className="mb-6">
+                <section className="mb-4 md:mb-6 z-[99] relative">
                     <LogForm refresh={fetchLogs} session={session} setSession={setSession} />
                 </section>
 
                 <section>
                     {loading ? (
-                        <div className="bg-white/70 backdrop-blur-sm border border-slate-200 rounded-2xl p-16 flex flex-col items-center gap-3 shadow-xl">
+                        <div className="bg-white/70 backdrop-blur-sm border border-slate-200 rounded-2xl p-12 md:p-16 flex flex-col items-center gap-3 shadow-xl">
                             <svg className="w-8 h-8 text-primary animate-spin" fill="none" viewBox="0 0 24 24">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
