@@ -12,7 +12,7 @@ function PointPage() {
     const fetchLeaderboard = async (filterType = 'all') => {
         setLoading(true);
         try {
-            const res = await axios.get(`http://127.0.0.1:8000/api/points/leaderboard?filter=${filterType}`);
+            const res = await axios.get(`https://rumahrapi.com/backend/api/points/leaderboard?filter=${filterType}`);
             setLeaderboard(res.data);
         } catch (error) {
             console.error('Error fetching leaderboard:', error);
@@ -24,7 +24,7 @@ function PointPage() {
     const fetchUserDetail = async (ncs) => {
         setLoadingDetail(true);
         try {
-            const res = await axios.get(`http://127.0.0.1:8000/api/points/user/${ncs}?filter=${filter}`);
+            const res = await axios.get(`https://rumahrapi.com/backend/api/points/user/${ncs}?filter=${filter}`);
             setUserDetail(res.data);
         } catch (error) {
             console.error('Error fetching user detail:', error);
@@ -63,7 +63,7 @@ function PointPage() {
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                     <div>
                         <h1 className="text-4xl font-bold text-slate-900 mb-2">Leaderboard Points</h1>
-                        <p className="text-slate-600">Ranking berdasarkan aktivitas pencatat dan Check in</p>
+                        <p className="text-slate-600">Urutan berdasarkan aktivitas pencatat dan Check in</p>
                     </div>
                     
                     <div className="flex items-center gap-2 bg-white/70 backdrop-blur-md border border-slate-200 rounded-xl p-1 shadow-sm">
@@ -110,7 +110,7 @@ function PointPage() {
                             <table className="w-full text-sm">
                                 <thead>
                                     <tr className="bg-slate-50/80 border-b border-slate-100">
-                                        <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">Rank</th>
+                                        <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">Urutan</th>
                                         <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">10-28</th>
                                         <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">Nama</th>
                                         <th className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-wide">Total Points</th>

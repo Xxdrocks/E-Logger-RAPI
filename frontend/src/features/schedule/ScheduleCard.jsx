@@ -10,7 +10,7 @@ function ScheduleCard({ schedule, onEdit, onDelete }) {
 
     const { day, month } = formatDate(schedule.event_date);
     const imageUrl = schedule.image 
-        ? `http://127.0.0.1:8000/storage/${schedule.image}`
+        ? `https://rumahrapi.com/backend/storage/${schedule.image}`
         : '/images/default-event.jpg';
 
     const colors = [
@@ -24,7 +24,6 @@ function ScheduleCard({ schedule, onEdit, onDelete }) {
 
     return (
         <div className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden">
-            {/* Desktop Layout */}
             <div className="hidden md:flex">
                 <div className={`w-32 flex-shrink-0 bg-gradient-to-br ${colors[colorIndex]} flex flex-col items-center justify-center text-white`}>
                     <p className="text-5xl font-bold leading-none">{day}</p>

@@ -7,16 +7,18 @@ use Illuminate\Http\Request;
 
 class AdminMiddleware
 {
-    /**
-     * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
-     */
     public function handle(Request $request, Closure $next)
     {
-        if (!$request->user() || !$request->user()->isAdmin()) {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        if (!in_array($user->role, ['admin', 'superadmin'])) {
             return response()->json([
-                'message' => 'Unauthorized. Admin access only.'
+                'message' => 'Forbidden: Admin or Superadmin access required',
+                'your_role' => $user->role
             ], 403);
         }
 

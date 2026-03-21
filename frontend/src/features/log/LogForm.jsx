@@ -22,9 +22,9 @@ function LogForm({ refresh, session, setSession }) {
     const [notes, setNotes] = useState('');
 
     const [showFreqSuggestions, setShowFreqSuggestions] = useState(false);
-    const frequencyOptions = ['175.00', '200.00', '300.00'];
+    const frequencyOptions = ['27.375mhz'];
     const [showKetSuggestions, setShowKetSuggestions] = useState(false);
-    const keteranganOptions = ['Sesi 1', 'Sesi 2'];
+    const keteranganOptions = ['Net RAPI 27Mhz 2026'];
 
     const [bulkFile, setBulkFile] = useState(null);
     const [bulkImporting, setBulkImporting] = useState(false);
@@ -57,7 +57,7 @@ function LogForm({ refresh, session, setSession }) {
 
         if (value.length >= 2) {
             try {
-                const res = await axios.get(`http://127.0.0.1:8000/api/logs/search-ncs?q=${value}`);
+                const res = await axios.get(`https://rumahrapi.com/backend/api/logs/search-ncs?q=${value}`);
                 setPencatatSuggestions(res.data);
                 setShowPencatatSuggestions(true);
             } catch (err) {
@@ -90,7 +90,7 @@ function LogForm({ refresh, session, setSession }) {
 
         if (value.length >= 2) {
             try {
-                const res = await axios.get(`http://127.0.0.1:8000/api/logs/search-ncs?q=${value}`);
+                const res = await axios.get(`https://rumahrapi.com/backend/api/logs/search-ncs?q=${value}`);
                 setSuggestions(res.data);
                 setShowSuggestions(true);
             } catch (err) {
@@ -109,7 +109,7 @@ function LogForm({ refresh, session, setSession }) {
             if (!ncs) return;
 
             try {
-                const res = await axios.get(`http://127.0.0.1:8000/api/logs/search-ncs?q=${ncs}`);
+                const res = await axios.get(`https://rumahrapi.com/backend/api/logs/search-ncs?q=${ncs}`);
                 
                 const exactMatch = res.data.find(op => op.ncs.toLowerCase() === ncs.toLowerCase());
                 const partialMatch = res.data.find(op => op.ncs.toLowerCase().includes(ncs.toLowerCase()));
@@ -139,7 +139,7 @@ function LogForm({ refresh, session, setSession }) {
         if (!session || !ncs) return;
         setLoading(true);
         try {
-            await axios.post('http://127.0.0.1:8000/api/logs', {
+            await axios.post('https://rumahrapi.com/backend/api/logs', {
                 frequency: session.frequency,
                 keterangan: session.keterangan,
                 ncs_1028: ncs,
@@ -198,7 +198,7 @@ function LogForm({ refresh, session, setSession }) {
             formData.append('pencatat_ncs', session.pencatat_ncs);
             formData.append('pencatat_nama', session.pencatat_nama || '');
 
-            const res = await axios.post('http://127.0.0.1:8000/api/logs/bulk-import', formData, {
+            const res = await axios.post('https://rumahrapi.com/backend/api/logs/bulk-import', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 
@@ -237,7 +237,7 @@ function LogForm({ refresh, session, setSession }) {
     };
 
     return (
-        <div className="bg-white/75 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-xl shadow-slate-200/60">
+        <div className="bg-white/75 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-xl">
             {toast && (
                 <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[999] px-5 py-2.5 rounded-full shadow-lg text-white text-sm font-semibold ${
                     toast.type === 'error' ? 'bg-red-500' : 'bg-primary'
@@ -247,47 +247,40 @@ function LogForm({ refresh, session, setSession }) {
             )}
 
             {(!session || editSession) && (
-                <div className="p-7">
-                    <div className="flex items-center gap-3 mb-6 pb-5 border-b border-slate-100">
-                        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-md shadow-primary/20">
-                            <svg width="16" height="16" fill="none" stroke="white" strokeWidth="2.2" viewBox="0 0 24 24">
+                <div className="p-5 md:p-7">
+                    <div className="flex items-center gap-3 mb-5 pb-4 border-b border-slate-100">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-md">
+                            <svg width="18" height="18" fill="none" stroke="white" strokeWidth="2" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             </svg>
                         </div>
                         <div>
-                            <p className="text-sm font-bold text-slate-800 m-0 leading-tight">
-                                {editSession ? 'Ganti Sesi' : 'Mulai Sesi Baru'}
+                            <h2 className="text-base font-bold text-slate-900">{editSession ? 'Ganti Sesi' : 'Sesi Aktif'}</h2>
+                            <p className="text-xs text-slate-500 mt-0.5">
+                                {editSession ? 'Ubah konfigurasi sesi' : 'Atur frequency dan keterangan'}
                             </p>
-                            <p className="text-xs text-slate-400 mt-0.5">Isi frequency, pencatat, dan keterangan</p>
                         </div>
                     </div>
 
-                    <form onSubmit={handleStartSession}>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
-                            <div className="flex flex-col gap-1.5 relative dropdown-container">
-                                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-                                    <img src="/images/logger.png" alt="Frequency" className="w-3.5 h-3.5 object-contain" />
-                                    Frequency
-                                </label>
+                    <form onSubmit={handleStartSession} className="space-y-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="dropdown-container">
+                                <label className="block text-xs font-bold text-slate-600 mb-2">Frequency</label>
                                 <div className="relative">
                                     <input
                                         placeholder="Pilih frequency..."
                                         value={sessionDraft.frequency}
                                         onClick={() => setShowFreqSuggestions(!showFreqSuggestions)}
                                         readOnly
-                                        className="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-slate-200 bg-slate-50/80 text-slate-800 text-sm placeholder:text-slate-300 outline-none transition-all duration-200 focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary-light cursor-pointer"
+                                        className="w-full px-4 py-2.5 rounded-xl border-2 border-slate-200 bg-white text-slate-800 text-sm cursor-pointer focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                                         required
                                     />
-                                    <img 
-                                        src="/images/arrow-down.png" 
-                                        alt="dropdown" 
-                                        className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 cursor-pointer transition-transform duration-200 pointer-events-none ${
-                                            showFreqSuggestions ? 'rotate-180' : ''
-                                        }`}
-                                    />
+                                    <svg className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 transition-transform ${showFreqSuggestions ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                    </svg>
                                     {showFreqSuggestions && (
-                                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-primary rounded-xl shadow-2xl z-50 overflow-hidden">
+                                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-primary rounded-xl shadow-xl z-50 overflow-hidden">
                                             {frequencyOptions.map((freq, idx) => (
                                                 <div
                                                     key={idx}
@@ -295,9 +288,9 @@ function LogForm({ refresh, session, setSession }) {
                                                         setSessionDraft({ ...sessionDraft, frequency: freq });
                                                         setShowFreqSuggestions(false);
                                                     }}
-                                                    className="px-3.5 py-2.5 cursor-pointer hover:bg-primary-light border-b border-slate-50 last:border-b-0 transition-colors duration-100"
+                                                    className="px-4 py-3 cursor-pointer hover:bg-primary/10 transition-colors border-b border-slate-100 last:border-0"
                                                 >
-                                                    <span className="font-bold text-primary">{freq}</span>
+                                                    <span className="font-semibold text-primary">{freq}</span>
                                                 </div>
                                             ))}
                                         </div>
@@ -305,74 +298,21 @@ function LogForm({ refresh, session, setSession }) {
                                 </div>
                             </div>
 
-                            <div className="flex flex-col gap-1.5 relative">
-                                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-                                    <img src="/images/ncspencatat.png" alt="NCS Pencatat" className="w-3.5 h-3.5 object-contain" />
-                                    NCS Pencatat
-                                </label>
-                                <input
-                                    placeholder="Ketik NCS pencatat..."
-                                    value={sessionDraft.pencatat_ncs}
-                                    onChange={handlePencatatNcsChange}
-                                    onFocus={() => { if (pencatatSuggestions.length > 0) setShowPencatatSuggestions(true); }}
-                                    onBlur={() => setTimeout(() => setShowPencatatSuggestions(false), 200)}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-slate-800 text-sm placeholder:text-slate-300 outline-none transition-all duration-200 focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary-light uppercase"
-                                    required
-                                />
-                                {showPencatatSuggestions && pencatatSuggestions.length > 0 && (
-                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-primary rounded-xl shadow-2xl z-50 overflow-hidden">
-                                        {pencatatSuggestions.map((op) => (
-                                            <div
-                                                key={op.ncs}
-                                                onPointerDown={(e) => {
-                                                    e.preventDefault();
-                                                    handleSelectPencatat(op);
-                                                }}
-                                                className="flex items-center justify-between px-3.5 py-2.5 cursor-pointer hover:bg-primary-light border-b border-slate-50 last:border-b-0 transition-colors duration-100"
-                                            >
-                                                <span className="font-bold text-primary font-mono text-sm">{op.ncs}</span>
-                                                <span className="text-slate-400 text-xs">{op.nama}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="flex flex-col gap-1.5">
-                                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-                                    <img src="/images/namapencatat.png" alt="Nama Pencatat" className="w-3.5 h-3.5 object-contain" />
-                                    Nama Pencatat
-                                </label>
-                                <input
-                                    placeholder="Otomatis dari NCS"
-                                    value={sessionDraft.pencatat_nama}
-                                    readOnly
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-100 text-slate-600 text-sm placeholder:text-slate-300 outline-none cursor-not-allowed"
-                                />
-                            </div>
-
-                            <div className="flex flex-col gap-1.5 relative dropdown-container">
-                                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-                                    <img src="/images/keterangan.png" alt="Keterangan" className="w-3.5 h-3.5 object-contain" />
-                                    Keterangan
-                                </label>
+                            <div className="dropdown-container">
+                                <label className="block text-xs font-bold text-slate-600 mb-2"> Kegaiatan </label>
                                 <div className="relative">
                                     <input
-                                        placeholder="Pilih keterangan..."
+                                        placeholder="Pilih kegiatan..."
                                         value={sessionDraft.keterangan}
                                         onClick={() => setShowKetSuggestions(!showKetSuggestions)}
                                         readOnly
-                                        className="w-full px-3.5 py-2.5 pr-10 rounded-xl border border-slate-200 bg-slate-50/80 text-slate-800 text-sm placeholder:text-slate-300 outline-none transition-all duration-200 focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary-light cursor-pointer"
+                                        className="w-full px-4 py-2.5 rounded-xl border-2 border-slate-200 bg-white text-slate-800 text-sm cursor-pointer focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                                     />
-                                    <img 
-                                        src="/images/arrow-down.png" 
-                                        alt="dropdown" 
-                                        className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 cursor-pointer transition-transform duration-200 pointer-events-none ${
-                                            showKetSuggestions ? 'rotate-180' : ''
-                                        }`}
-                                    />
+                                    <svg className={`absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 transition-transform ${showKetSuggestions ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                    </svg>
                                     {showKetSuggestions && (
-                                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-primary rounded-xl shadow-2xl z-50 overflow-hidden">
+                                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-primary rounded-xl shadow-xl z-50 overflow-hidden">
                                             {keteranganOptions.map((ket, idx) => (
                                                 <div
                                                     key={idx}
@@ -380,34 +320,72 @@ function LogForm({ refresh, session, setSession }) {
                                                         setSessionDraft({ ...sessionDraft, keterangan: ket });
                                                         setShowKetSuggestions(false);
                                                     }}
-                                                    className="px-3.5 py-2.5 cursor-pointer hover:bg-primary-light border-b border-slate-50 last:border-b-0 transition-colors duration-100"
+                                                    className="px-4 py-3 cursor-pointer hover:bg-primary/10 transition-colors border-b border-slate-100 last:border-0"
                                                 >
-                                                    <span className="font-bold text-primary">{ket}</span>
+                                                    <span className="font-semibold text-primary">{ket}</span>
                                                 </div>
                                             ))}
                                         </div>
                                     )}
                                 </div>
                             </div>
+
+                            <div className="relative">
+                                <label className="block text-xs font-bold text-slate-600 mb-2">NCS On Duty</label>
+                                <input
+                                    placeholder="Ketik 10-28..."
+                                    value={sessionDraft.pencatat_ncs}
+                                    onChange={handlePencatatNcsChange}
+                                    onFocus={() => { if (pencatatSuggestions.length > 0) setShowPencatatSuggestions(true); }}
+                                    onBlur={() => setTimeout(() => setShowPencatatSuggestions(false), 200)}
+                                    className="w-full px-4 py-2.5 rounded-xl border-2 border-slate-200 bg-white text-slate-800 text-sm uppercase focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                                    required
+                                />
+                                {showPencatatSuggestions && pencatatSuggestions.length > 0 && (
+                                    <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-primary rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto">
+                                        {pencatatSuggestions.map((op) => (
+                                            <div
+                                                key={op.ncs}
+                                                onPointerDown={(e) => {
+                                                    e.preventDefault();
+                                                    handleSelectPencatat(op);
+                                                }}
+                                                className="flex justify-between items-center px-4 py-3 cursor-pointer hover:bg-primary/10 transition-colors border-b border-slate-100 last:border-0"
+                                            >
+                                                <span className="font-bold text-primary font-mono">{op.ncs}</span>
+                                                <span className="text-slate-500 text-sm">{op.nama}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div>
+                                <label className="block text-xs font-bold text-slate-600 mb-2"> Operator </label>
+                                <input
+                                    value={sessionDraft.pencatat_nama}
+                                    readOnly
+                                    placeholder="Otomatis terisi"
+                                    className="w-full px-4 py-2.5 rounded-xl border-2 border-slate-200 bg-slate-50 text-slate-600 text-sm cursor-not-allowed"
+                                />
+                            </div>
                         </div>
-                        <div className="flex items-center gap-3 justify-end">
+
+                        <div className="flex gap-3 pt-2">
                             {editSession && (
                                 <button
                                     type="button"
                                     onClick={() => setEditSession(false)}
-                                    className="px-5 py-2.5 rounded-xl border border-slate-200 text-slate-500 text-sm font-semibold hover:bg-slate-50 transition-all duration-200"
+                                    className="flex-1 px-5 py-2.5 rounded-xl border-2 border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-all"
                                 >
                                     Batal
                                 </button>
                             )}
                             <button
                                 type="submit"
-                                className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-white text-sm font-semibold shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 transition-all duration-200"
+                                className="flex-1 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-semibold shadow-lg hover:shadow-xl transition-all"
                             >
-                                <svg width="14" height="14" fill="none" stroke="white" strokeWidth="2.2" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                </svg>
-                                Mulai Sesi
+                                {editSession ? 'Simpan' : 'Mulai Sesi'}
                             </button>
                         </div>
                     </form>
@@ -416,220 +394,168 @@ function LogForm({ refresh, session, setSession }) {
 
             {session && !editSession && (
                 <>
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-4 sm:px-7 py-4 bg-primary-light/60 border-b border-primary/10">
-                        <div className="flex items-center gap-3">
-                            <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-md shadow-primary/30 animate-pulse" />
-                            <div className="flex items-center gap-2 flex-wrap">
-                                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Sesi Aktif</span>
-                                <span className="inline-flex items-center gap-1.5 bg-white border border-primary text-primary font-bold font-mono text-xs px-2 sm:px-3 py-1 rounded-lg shadow-sm">
-                                    <img src="/images/logger.png" alt="Frequency" className="w-3 h-3 object-contain" />
-                                    {session.frequency}
-                                </span>
-                                <span className="inline-flex items-center gap-1.5 bg-white border border-secondary text-secondary font-bold font-mono text-xs px-2 sm:px-3 py-1 rounded-lg shadow-sm">
-                                    <img src="/images/ncspencatat.png" alt="NCS Pencatat" className="w-3 h-3 object-contain" />
-                                    {session.pencatat_ncs}
-                                </span>
-                                {session.keterangan && (
-                                    <span className="inline-flex items-center gap-1.5 bg-white border border-slate-200 text-slate-600 text-xs px-2 sm:px-3 py-1 rounded-lg shadow-sm">
-                                        <img src="/images/keterangan.png" alt="Keterangan" className="w-3 h-3 object-contain" />
-                                        <span className="max-w-[80px] sm:max-w-none truncate">{session.keterangan}</span>
+                    <div className="px-5 md:px-7 py-4 bg-gradient-to-r from-primary/10 to-secondary/10 border-b border-slate-200/50">
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                    <span className="text-xs font-bold text-slate-600 uppercase">Sesi Aktif</span>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white rounded-lg border border-primary shadow-sm">
+                                        <span className="text-xs font-semibold text-primary">{session.frequency}</span>
                                     </span>
-                                )}
+                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white rounded-lg border border-secondary shadow-sm">
+                                        <span className="text-xs font-mono font-semibold text-secondary">{session.pencatat_ncs}</span>
+                                    </span>
+                                    {session.keterangan && (
+                                        <span className="inline-flex items-center px-3 py-1 bg-white rounded-lg border border-slate-200 shadow-sm">
+                                            <span className="text-xs font-semibold text-slate-600">{session.keterangan}</span>
+                                        </span>
+                                    )}
+                                </div>
                             </div>
+                            <button
+                                onClick={() => { setEditSession(true); setSessionDraft({ ...session }); }}
+                                className="text-xs font-semibold text-primary hover:text-primary-dark transition-colors flex items-center gap-1"
+                            >
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                Ganti Sesi
+                            </button>
                         </div>
-                        <button
-                            onClick={() => { setEditSession(true); setSessionDraft({ ...session }); }}
-                            className="flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-primary transition-colors duration-150 whitespace-nowrap"
-                        >
-                            <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                            <span>Ganti Sesi</span>
-                        </button>
                     </div>
 
-                    <div className="px-4 md:px-7 pt-4 md:pt-6 pb-3 md:pb-4 border-b border-slate-100">
-                        <div className="flex items-center gap-2 mb-3">
-                            <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                            </svg>
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">
-                                Import Excel (Multiple NCS)
+                    <div className="p-5 md:p-7 space-y-6">
+                        <div className="space-y-3">
+                            <label className="flex items-center gap-2 text-sm font-bold text-slate-700">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                Catatan NCS 
                             </label>
-                        </div>
-                        
-                        <div className="space-y-2 md:space-y-3">
-                            <div className="bg-blue-50 border border-blue-200 rounded-lg md:rounded-xl p-2 md:p-3">
-                                <p className="text-xs text-blue-800">
-                                    📄 <strong>Format:</strong> 1 kolom (NCS saja), tanpa header<br/>
-                                    <strong>Contoh:</strong> JZ09VAG, JZ01AEJ (satu per baris)
-                                </p>
-                            </div>
-                            <input
-                                type="file"
-                                accept=".xlsx,.xls,.csv"
-                                onChange={handleBulkFileChange}
-                                className="w-full px-2 md:px-3 py-1.5 md:py-2 rounded-lg md:rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-xs outline-none file:mr-2 md:file:mr-3 file:py-1 md:file:py-1.5 file:px-2 md:file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-primary file:text-white"
+                            <textarea
+                                value={notes}
+                                onChange={(e) => setNotes(e.target.value)}
+                                onKeyDown={handleNotesKeyDown}
+                                className="w-full px-4 py-3 rounded-xl border-2 border-amber-200 bg-amber-50 text-slate-700 text-sm focus:border-amber-400 focus:ring-2 focus:ring-amber-100 transition-all resize-none"
+                                rows="4"
+                                placeholder="Untuk mencatat 10-28 yang didengar oleh NCS"
                             />
-                            {bulkFile && (
-                                <p className="text-xs text-slate-600">
-                                    📄 {bulkFile.name} ({(bulkFile.size / 1024).toFixed(2)} KB)
-                                </p>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-4 relative">
+                            {success && (
+                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-5 py-2 bg-green-500 text-white text-sm font-semibold rounded-full shadow-lg z-10">
+                                    ✓ Log tersimpan!
+                                </div>
                             )}
-                            {bulkResult && (
-                                <div className={`rounded-lg md:rounded-xl p-2 md:p-3 text-xs ${
-                                    bulkResult.success ? 'bg-green-50 border border-green-200 text-green-800' : 'bg-red-50 border border-red-200 text-red-800'
-                                }`}>
-                                    <p className="font-bold">{bulkResult.message}</p>
-                                    {bulkResult.errors && bulkResult.errors.length > 0 && (
-                                        <div className="mt-1 md:mt-2 max-h-16 md:max-h-20 overflow-y-auto">
-                                            {bulkResult.errors.slice(0, 5).map((err, idx) => (
-                                                <p key={idx}>Baris {err.row}: {err.ncs} - {err.message}</p>
+
+                            <div className="flex items-center gap-3 pb-3 border-b border-slate-200">
+                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
+                                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+                                    </svg>
+                                </div>
+                                <h3 className="text-sm font-bold text-slate-900">Input NCS</h3>
+                            </div>
+
+                            <div className="space-y-3">
+                                <div className="relative">
+                                    <label className="block text-xs font-bold text-slate-600 mb-2">10/28</label>
+                                    <input
+                                        placeholder="Ketik NCS → Enter"
+                                        value={ncs}
+                                        onChange={handleNcsChange}
+                                        onKeyDown={handleNcsKeyDown}
+                                        onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
+                                        onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                                        className="w-full px-4 py-2.5 rounded-xl border-2 border-slate-200 bg-white text-slate-800 text-sm uppercase font-mono focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                                        autoFocus
+                                    />
+                                    {showSuggestions && suggestions.length > 0 && (
+                                        <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-primary rounded-xl shadow-xl z-[9999] max-h-48 overflow-y-auto">
+                                            {suggestions.map((op) => (
+                                                <div
+                                                    key={op.ncs}
+                                                    onPointerDown={(e) => {
+                                                        e.preventDefault();
+                                                        handleSelectSuggestion(op);
+                                                    }}
+                                                    className="flex justify-between items-center px-4 py-3 cursor-pointer hover:bg-primary/10 transition-colors border-b border-slate-100 last:border-0"
+                                                >
+                                                    <span className="font-bold text-primary font-mono">{op.ncs}</span>
+                                                    <span className="text-slate-500 text-sm">{op.nama}</span>
+                                                </div>
                                             ))}
                                         </div>
                                     )}
                                 </div>
+
+                                {selectedOperator && (
+                                    <div className="flex items-center gap-3 px-4 py-3 bg-primary/5 border border-primary/20 rounded-xl">
+                                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold text-sm">
+                                            {selectedOperator.nama[0].toUpperCase()}
+                                        </div>
+                                        <span className="font-semibold text-slate-800">{selectedOperator.nama}</span>
+                                    </div>
+                                )}
+
+                                <button
+                                    type="submit"
+                                    disabled={loading || !ncs}
+                                    className="w-full px-5 py-3 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-bold shadow-lg hover:shadow-xl disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                                >
+                                    {loading ? (
+                                        <>
+                                            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                                                <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="4" strokeOpacity="0.25" />
+                                                <path fill="white" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                            </svg>
+                                            Menyimpan...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                            </svg>
+                                            Simpan Log
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                             <div className="space-y-3">
+                            <label className="flex items-center gap-2 text-sm font-bold text-slate-700">
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                </svg>
+                                Import Excel
+                            </label>
+    
+                            <input
+                                type="file"
+                                accept=".xlsx,.xls,.csv"
+                                onChange={handleBulkFileChange}
+                                className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary file:text-white file:font-semibold hover:file:bg-primary-dark"
+                            />
+                            {bulkFile && (
+                                <p className="text-xs text-slate-600">📄 {bulkFile.name}</p>
                             )}
                             <button
                                 onClick={handleBulkImport}
                                 disabled={!bulkFile || bulkImporting}
-                                className="w-full px-3 md:px-4 py-2 md:py-2.5 rounded-lg md:rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs md:text-sm font-semibold shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                className="w-full px-4 py-2.5 rounded-xl bg-primary text-white font-semibold hover:bg-hover disabled:opacity-50 transition-all"
                             >
-                                {bulkImporting ? (
-                                    <>
-                                        <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                            <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="4" strokeOpacity="0.25" />
-                                            <path fill="white" fillOpacity="0.75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                                        </svg>
-                                        Importing...
-                                    </>
-                                ) : (
-                                    <>
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                                        </svg>
-                                        Import Sekarang
-                                    </>
-                                )}
+                                {bulkImporting ? 'Importing...' : 'Import Sekarang'}
                             </button>
-                        </div>
+                        </div>  
+                        </form>
                     </div>
-
-                    <div className="px-7 pt-6 pb-4 border-b border-slate-100">
-                        <div className="flex items-center gap-2 mb-3">
-                            <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                            </svg>
-                            <label className="text-xs font-bold text-slate-500 uppercase tracking-wide">
-                                Catatan Peserta 
-                            </label>
-                        </div>
-                        <textarea
-                            value={notes}
-                            onChange={(e) => setNotes(e.target.value)}
-                            onKeyDown={handleNotesKeyDown}
-                            className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-amber-50/50 text-slate-700 text-sm placeholder:text-slate-400 outline-none transition-all duration-200 focus:border-amber-400 focus:bg-amber-50 focus:ring-2 focus:ring-amber-100 font-mono resize-none"
-                            rows="4"
-                            placeholder="Ketik catatan di sini... (ketik '-' lalu Enter untuk buat list)"
-                        />
-                    </div>
-
-                    <form onSubmit={handleSubmit} className="p-7 relative">
-                        {success && (
-                            <div className="absolute -top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-primary text-white text-sm font-semibold px-5 py-2 rounded-full shadow-lg whitespace-nowrap">
-                                <span>✓</span> Log berhasil disimpan!
-                            </div>
-                        )}
-
-                        <div className="flex items-center gap-3 mb-5 pb-4 border-b border-slate-100">
-                            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-secondary to-primary flex items-center justify-center shadow-md shadow-primary/20">
-                                <svg width="16" height="16" fill="none" stroke="white" strokeWidth="2.2" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                                </svg>
-                            </div>
-                            <div>
-                                <p className="text-sm font-bold text-slate-800 m-0 leading-tight">Input NCS</p>
-                            </div>
-                        </div>
-
-                        <div className="flex flex-col gap-3 md:flex-row md:gap-3 md:items-end">
-                            <div className="flex flex-col gap-1.5 flex-1 relative">
-                                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-                                    <img src="/images/home.png" alt="10/28" className="w-3.5 h-3.5 object-contain" />
-                                    10/28
-                                </label>
-                                <input
-                                    placeholder="Ketik VAG → Enter"
-                                    value={ncs}
-                                    onChange={handleNcsChange}
-                                    onKeyDown={handleNcsKeyDown}
-                                    onFocus={() => { if (suggestions.length > 0) setShowSuggestions(true); }}
-                                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-slate-800 text-sm placeholder:text-slate-300 outline-none transition-all duration-200 focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary-light uppercase font-mono"
-                                    autoFocus
-                                />
-                                {showSuggestions && suggestions.length > 0 && (
-                                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-primary rounded-xl shadow-2xl z-[9999] overflow-hidden">
-                                        {suggestions.map((op) => (
-                                            <div
-                                                key={op.ncs}
-                                                onPointerDown={(e) => {
-                                                    e.preventDefault();
-                                                    handleSelectSuggestion(op);
-                                                }}
-                                                className="flex items-center justify-between px-3.5 py-2.5 cursor-pointer hover:bg-primary-light border-b border-slate-50 last:border-b-0 transition-colors duration-100"
-                                            >
-                                                <span className="font-bold text-primary font-mono text-sm">{op.ncs}</span>
-                                                <span className="text-slate-400 text-xs">{op.nama}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
-
-                            {selectedOperator && (
-                                <div className="flex flex-col gap-1.5 flex-1">
-                                    <label className="text-[11px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
-                                        <img src="/images/namapencatat.png" alt="Nama" className="w-3.5 h-3.5 object-contain" />
-                                        Nama
-                                    </label>
-                                    <div className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl border border-primary bg-primary-light/60 text-primary text-sm font-semibold">
-                                        <div className="w-5 h-5 rounded-full bg-gradient-to-br from-secondary to-primary flex items-center justify-center text-white text-[10px] font-bold shrink-0">
-                                            {selectedOperator.nama[0].toUpperCase()}
-                                        </div>
-                                        <span className="truncate">{selectedOperator.nama}</span>
-                                    </div>
-                                </div>
-                            )}
-
-                            <button
-                                type="submit"
-                                disabled={loading || !ncs}
-                                className="w-full md:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-secondary to-primary text-white text-sm font-semibold shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 flex items-center justify-center gap-2"
-                            >
-                                {loading ? (
-                                    <>
-                                        <svg width="14" height="14" fill="none" viewBox="0 0 24 24" className="animate-spin">
-                                            <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="4" strokeOpacity="0.25" />
-                                            <path fill="white" fillOpacity="0.75" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                                        </svg>
-                                        Menyimpan...
-                                    </>
-                                ) : (
-                                    <>
-                                        <svg width="14" height="14" fill="none" stroke="white" strokeWidth="2.2" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                        </svg>
-                                        Simpan Log
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                    </form>
                 </>
             )}
         </div>
     );
 }
 
-export default LogForm;
+export default LogForm; 

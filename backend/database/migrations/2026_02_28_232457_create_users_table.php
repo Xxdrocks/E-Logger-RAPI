@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('ncs')->unique();
             $table->string('nama');
-            $table->enum('role', ['admin', 'member'])->default('member');
+            $table->enum('role', ['superadmin','admin', 'member',])->default('member');
             $table->timestamps();
         });
     }

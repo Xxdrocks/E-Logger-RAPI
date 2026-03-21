@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Validator;
@@ -22,7 +23,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'ncs' => 'required|string|max:20|unique:users',
             'nama' => 'required|string|max:255',
-            'role' => 'nullable|in:admin,member',
+            'role' => 'nullable|in:superadmin,admin,member',
         ]);
 
         $user = User::create([
@@ -44,7 +45,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'ncs' => 'required|string|max:20|unique:users,ncs,' . $user->id,
             'nama' => 'required|string|max:255',
-            'role' => 'nullable|in:admin,member',
+            'role' => 'nullable|in:superadmin,admin,member',
         ]);
 
         $user->update($validated);
@@ -53,6 +54,10 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        if (Auth::user()->id === $user->id) {
+            return response()->json(['message' => 'Tidak bisa menghapus akun sendiri'], 403);
+        }
+
         $user->delete();
         return response()->json(['message' => 'User deleted successfully']);
     }
@@ -96,9 +101,7 @@ class UserController extends Controller
             $errors = [];
 
             foreach ($rows as $index => $row) {
-                if ($index === 0) continue;
-
-                if (empty($row[1]) || empty($row[2])) {
+                if (empty($row[0]) || empty($row[1])) {
                     $skipped++;
                     $errors[] = [
                         'row' => $index + 1,
@@ -107,9 +110,13 @@ class UserController extends Controller
                     continue;
                 }
 
-                $ncs = trim(strtoupper($row[1]));
-                $nama = trim($row[2]);
-                $role = 'member';
+                $ncs = trim(strtoupper($row[0]));
+                $nama = trim($row[1]);
+                $role = isset($row[2]) ? strtolower(trim($row[2])) : 'member';
+
+                if (!in_array($role, ['superadmin', 'admin', 'member'])) {
+                    $role = 'member';
+                }
 
                 $existingUser = User::where('ncs', $ncs)->first();
                 if ($existingUser) {
@@ -129,7 +136,7 @@ class UserController extends Controller
                 ], [
                     'ncs' => 'required|string|max:20',
                     'nama' => 'required|string|max:255',
-                    'role' => 'in:admin,member',
+                    'role' => 'in:superadmin,admin,member',
                 ]);
 
                 if ($validator->fails()) {
@@ -173,7 +180,7 @@ class UserController extends Controller
         $validated = $request->validate([
             'ncs' => 'required|string|max:20|unique:users',
             'nama' => 'required|string|max:255',
-            'role' => 'nullable|in:admin,member',
+            'role' => 'nullable|in:superadmin,admin,member',
         ]);
 
         $user = User::create([

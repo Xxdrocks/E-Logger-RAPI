@@ -8,7 +8,7 @@ function LogTable({ logs = [], refresh, session }) {
     const handleDelete = async (id) => {
         setDeletingId(id);
         try {
-            await axios.delete(`http://127.0.0.1:8000/api/logs/${id}`);
+            await axios.delete(`https://rumahrapi.com/backend/api/logs/${id}`);
             refresh();
         } catch (error) {
             console.error("Delete error:", error);
@@ -19,7 +19,7 @@ function LogTable({ logs = [], refresh, session }) {
 
     const handleDeleteAll = async () => {
         try {
-            await axios.post("http://127.0.0.1:8000/api/logs/delete-all");
+            await axios.post("https://rumahrapi.com/backend/api/logs/delete-all");
             refresh();
             setShowDeleteAllModal(false);
         } catch (error) {
@@ -30,15 +30,15 @@ function LogTable({ logs = [], refresh, session }) {
     const handleExport = async () => {
         const ket = session?.keterangan || 'semua_data';
         const token = localStorage.getItem('token');
-        
+
         const today = new Date();
         const day = String(today.getDate()).padStart(2, '0');
         const month = String(today.getMonth() + 1).padStart(2, '0');
         const year = today.getFullYear();
         const fileName = `${day}-${month}-${year}_${ket}.xlsx`;
-        
+
         try {
-            const response = await axios.get('http://127.0.0.1:8000/api/logs/export', {
+            const response = await axios.get('https://rumahrapi.com/backend/api/logs/export', {
                 params: { keterangan: ket },
                 headers: { Authorization: `Bearer ${token}` },
                 responseType: 'blob'
@@ -48,10 +48,10 @@ function LogTable({ logs = [], refresh, session }) {
             const link = document.createElement('a');
             link.href = url;
             link.download = fileName;
-            
+
             document.body.appendChild(link);
             link.click();
-            
+
             setTimeout(() => {
                 document.body.removeChild(link);
                 window.URL.revokeObjectURL(url);
@@ -62,7 +62,7 @@ function LogTable({ logs = [], refresh, session }) {
         }
     };
 
-    const columns = ["Freq", "10/28", "Waktu", "ZZD", "Nama", "Keterangan", "Aksi"];
+    const columns = ["Freq", "10/28", "Waktu", "Nama", "ZZD", "Aksi"];
 
     return (
         <div className="bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-xl shadow-slate-200/60 overflow-hidden">
@@ -80,9 +80,9 @@ function LogTable({ logs = [], refresh, session }) {
                                 <p className="text-sm text-slate-500 mt-0.5">Tindakan ini tidak dapat dibatalkan</p>
                             </div>
                         </div>
-                        
+
                         <p className="text-sm text-slate-600 mb-6">
-                            Apakah Anda yakin ingin menghapus <strong>semua {logs.length} log</strong>? 
+                            Apakah Anda yakin ingin menghapus <strong>semua {logs.length} log</strong>?
                             Data yang sudah dihapus tidak dapat dikembalikan.
                         </p>
 
@@ -182,13 +182,15 @@ function LogTable({ logs = [], refresh, session }) {
                                         </span>
                                     </td>
                                     <td className="px-5 py-3.5 text-slate-600 text-xs font-medium">
-                                        {log.waktu ?? "-"}
+                                        {log.created_at
+                                            ? new Date(log.created_at).toLocaleTimeString("id-ID", {
+                                                hour: "2-digit",
+                                                minute: "2-digit"
+                                            })
+                                            : "-"
+                                        }
                                     </td>
-                                    <td className="px-5 py-3.5">
-                                        <span className="font-mono text-amber-700 bg-amber-50 border border-amber-100 px-2.5 py-0.5 rounded-lg text-xs font-medium">
-                                            {log.zzd ?? "-"}
-                                        </span>
-                                    </td>
+                                   
                                     <td className="px-5 py-3.5">
                                         <div className="flex items-center gap-2">
                                             <div className="w-6 h-6 rounded-full bg-gradient-to-br from-secondary to-primary flex items-center justify-center text-white text-[10px] font-bold shrink-0">
@@ -197,8 +199,10 @@ function LogTable({ logs = [], refresh, session }) {
                                             <span className="text-slate-700 font-semibold text-xs">{log.nama ?? "-"}</span>
                                         </div>
                                     </td>
-                                    <td className="px-5 py-3.5 text-slate-500 text-xs max-w-[180px] truncate">
-                                        {log.keterangan ?? "-"}
+                                    <td className="px-5 py-3.5">
+                                        <span className="font-mono text-amber-700 bg-amber-50 border border-amber-100 px-2.5 py-0.5 rounded-lg text-xs font-medium">
+                                            {log.zzd ?? "-"}
+                                        </span>
                                     </td>
                                     <td className="px-5 py-3.5">
                                         <button

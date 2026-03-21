@@ -12,15 +12,11 @@ function Navbar() {
         { name: 'Home', path: '/', image: '/images/home.png' },
         { name: 'Schedule', path: '/schedule', image: '/images/schedule.png' },
         { name: 'Logger', path: '/logger', image: '/images/logger.png' },
+        { name : 'Points', path: '/points', image: '/images/points.png'},
         { name: 'Hubungi Kami', path: '/contact', image: '/images/contact.png' },
     ];
 
-    const handleLogout = async () => {
-        if (confirm('Yakin ingin logout?')) {
-            await logout();
-            navigate('/login');
-        }
-    };
+
 
     return (
         <div>
@@ -51,12 +47,7 @@ function Navbar() {
                                 <p className="font-semibold text-slate-700">{user.ncs}</p>
                                 <p className="text-slate-500 text-[10px]">{user.role}</p>
                             </div>
-                            <button
-                                onClick={handleLogout}
-                                className="px-4 py-2 rounded-full bg-red-500 text-white text-sm font-semibold hover:bg-red-600 transition-all duration-200"
-                            >
-                                Logout
-                            </button>
+                           
                         </div>
                     )}
                 </div>
@@ -90,17 +81,7 @@ function Navbar() {
                                 </span>
                             </Link>
                         ))}
-                        {user && (
-                            <button
-                                onClick={handleLogout}
-                                className="flex flex-col items-center gap-1 px-3 py-2 rounded-2xl bg-red-500 text-white"
-                            >
-                                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                                </svg>
-                                <span className="text-[10px] font-semibold">Logout</span>
-                            </button>
-                        )}
+                        
                     </div>
                 </div>
             </nav>

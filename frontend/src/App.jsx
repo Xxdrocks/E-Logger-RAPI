@@ -12,6 +12,7 @@ import OperatorPage from './features/operator/OperatorPage';
 import SchedulePage from './features/schedule/SchedulePage';
 import ContactPage from './features/contact/ContactPage';
 import PointPage from './features/points/PointsPage';
+import SuperadminPanel from './superadmin/SuperadminPage';
 
 function App() {
   return (
@@ -57,6 +58,16 @@ function App() {
                   <ProtectedRoute adminOnly>
                     <OperatorPage />
                   </ProtectedRoute>
+                  
+                }
+              />
+              <Route
+                path="/operators/superadmin"
+                element={
+                  <ProtectedRoute superadminOnly>
+                    <SuperadminPanel />
+                  </ProtectedRoute>
+
                 }
               />
             </Routes>

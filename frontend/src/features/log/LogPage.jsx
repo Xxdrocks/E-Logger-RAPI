@@ -10,7 +10,7 @@ function LogPage() {
 
     const fetchLogs = async () => {
         try {
-            const res = await axios.get("http://127.0.0.1:8000/api/logs");
+            const res = await axios.get("https://rumahrapi.com/backend/api/logs");
             setLogs(res.data.data || []);
         } catch (error) {
             console.error("Gagal fetch logs:", error);
@@ -28,23 +28,7 @@ function LogPage() {
     const dateStr = now.toLocaleDateString("id-ID", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
     const timeStr = now.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
 
-    const stats = [
-        {
-            label: "Total Log",
-            value: logs.length,
-            image: "/images/logger.png",
-            color: "from-primary to-primary-dark",
-        },
-        {
-            label: "Hari Ini",
-            value: logs.filter((l) => {
-                if (!l.created_at) return false;
-                return new Date(l.created_at).toDateString() === now.toDateString();
-            }).length,
-            image: "/images/schedule.png",
-            color: "from-secondary to-secondary-dark",
-        },
-    ];
+
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-primary-light via-secondary-light to-accent-light relative overflow-hidden">
@@ -79,19 +63,7 @@ function LogPage() {
                         </div>
                     </div>
 
-                    <div className="mt-4 md:mt-6 grid grid-cols-2 gap-3">
-                        {stats.map((stat, i) => (
-                            <div key={i} className="bg-white/70 backdrop-blur-sm border border-slate-200 rounded-xl md:rounded-2xl px-4 md:px-5 py-3 md:py-4 shadow-sm flex items-center gap-3 md:gap-4">
-                                <div className={`w-8 h-8 md:w-9 md:h-9 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center shadow-md p-2`}>
-                                    <img src={stat.image} alt={stat.label} className="w-full h-full object-contain brightness-0 invert" />
-                                </div>
-                                <div>
-                                    <p className="text-lg md:text-xl font-extrabold text-slate-800">{loading ? "—" : stat.value}</p>
-                                    <p className="text-xs text-slate-500 font-medium">{stat.label}</p>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                    
                 </header>
 
                 <section className="mb-4 md:mb-6 z-[99] relative">

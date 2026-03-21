@@ -3,8 +3,10 @@ import axios from 'axios';
 
 function OperatorPage() {
     const [users, setUsers] = useState([]);
+    const [filteredUsers, setFilteredUsers] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
     const [loading, setLoading] = useState(true);
-    const [form, setForm] = useState({ ncs: '', nama: '' });
+    const [form, setForm] = useState({ ncs: '', nama: '', role: 'member' });
     const [submitting, setSubmitting] = useState(false);
     const [toast, setToast] = useState(null);
     const [editTarget, setEditTarget] = useState(null);
@@ -22,7 +24,7 @@ function OperatorPage() {
 
     const fetchUsers = async () => {
         try {
-            const res = await axios.get('http://127.0.0.1:8000/api/users');
+            const res = await axios.get('https://rumahrapi.com/backend/api/users');
             setUsers(res.data);
         } catch (err) {
             console.error(err);
@@ -35,12 +37,42 @@ function OperatorPage() {
         fetchUsers();
     }, []);
 
+    useEffect(() => {
+        filterAndSortUsers();
+    }, [users, searchQuery]);
+
+    const filterAndSortUsers = () => {
+        let filtered = users;
+
+        if (searchQuery.trim()) {
+            const query = searchQuery.toLowerCase();
+            filtered = filtered.filter(user => 
+                user.nama.toLowerCase().includes(query) || 
+                user.ncs.toLowerCase().includes(query)
+            );
+        }
+
+        filtered.sort((a, b) => {
+            const roleOrder = { superadmin: 0, admin: 1, member: 2 };
+            const roleA = roleOrder[a.role] || 3;
+            const roleB = roleOrder[b.role] || 3;
+
+            if (roleA !== roleB) {
+                return roleA - roleB;
+            }
+
+            return a.nama.localeCompare(b.nama);
+        });
+
+        setFilteredUsers(filtered);
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSubmitting(true);
         try {
-            await axios.post('http://127.0.0.1:8000/api/users', form);
-            setForm({ ncs: '', nama: '' });
+            await axios.post('https://rumahrapi.com/backend/api/users', form);
+            setForm({ ncs: '', nama: '', role: 'member' });
             showToast('✓ Operator berhasil ditambahkan');
             fetchUsers();
         } catch (err) {
@@ -61,7 +93,7 @@ function OperatorPage() {
     const handleUpdate = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`http://127.0.0.1:8000/api/users/${editTarget.id}`, editForm);
+            await axios.put(`https://rumahrapi.com/backend/api/users/${editTarget.id}`, editForm);
             showToast('✓ Operator berhasil diupdate');
             setEditTarget(null);
             fetchUsers();
@@ -74,9 +106,11 @@ function OperatorPage() {
     };
 
     const handleDelete = async (id) => {
+        if (!confirm('Yakin ingin menghapus operator ini?')) return;
+        
         setDeletingId(id);
         try {
-            await axios.delete(`http://127.0.0.1:8000/api/users/${id}`);
+            await axios.delete(`https://rumahrapi.com/backend/api/users/${id}`);
             showToast('✓ Operator berhasil dihapus');
             fetchUsers();
         } catch (err) {
@@ -115,7 +149,7 @@ function OperatorPage() {
             const formData = new FormData();
             formData.append('file', importFile);
 
-            const res = await axios.post('http://127.0.0.1:8000/api/users/bulk-import', formData, {
+            const res = await axios.post('https://rumahrapi.com/backend/api/users/bulk-import', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
@@ -145,6 +179,15 @@ function OperatorPage() {
         setImportResult(null);
     };
 
+    const getRoleBadgeColor = (role) => {
+        const colors = {
+            superadmin: 'bg-purple-50 text-purple-700 border-purple-200',
+            admin: 'bg-blue-50 text-blue-700 border-blue-200',
+            member: 'bg-slate-50 text-slate-700 border-slate-200'
+        };
+        return colors[role] || colors.member;
+    };
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-primary-light via-secondary-light to-accent-light relative overflow-hidden">
             <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary/20 rounded-full blur-3xl pointer-events-none" />
@@ -166,13 +209,14 @@ function OperatorPage() {
                             <div className="flex flex-col gap-3.5">
                                 <div>
                                     <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
-                                        10-28
+                                        NCS
                                     </label>
                                     <input
                                         value={editForm.ncs}
                                         onChange={(e) => setEditForm({ ...editForm, ncs: e.target.value.toUpperCase() })}
                                         className="w-full px-3.5 py-2.5 rounded-xl border border-primary bg-white text-slate-800 text-sm outline-none uppercase shadow-sm ring-4 ring-primary-light/30"
                                         required
+                                        disabled
                                     />
                                 </div>
                                 <div>
@@ -197,6 +241,7 @@ function OperatorPage() {
                                     >
                                         <option value="member">Member</option>
                                         <option value="admin">Admin</option>
+                                        <option value="superadmin">Superadmin</option>
                                     </select>
                                 </div>
                             </div>
@@ -235,9 +280,9 @@ function OperatorPage() {
                                 Format File Excel
                             </h3>
                             <ul className="text-xs text-blue-800 space-y-1">
-                                <li>• <strong>Kolom A:</strong> NCS / 10-28 (wajib)</li>
+                                <li>• <strong>Kolom A:</strong> NCS (wajib)</li>
                                 <li>• <strong>Kolom B:</strong> Nama (wajib)</li>
-                                <li>• <strong>Role:</strong> Otomatis "member"</li>
+                                <li>• <strong>Kolom C:</strong> Role (superadmin/admin/member)</li>
                                 <li>• <strong>Format:</strong> .xlsx / .xls / .csv (max 5MB)</li>
                                 <li>• Tidak perlu header, langsung data dari baris pertama</li>
                             </ul>
@@ -385,20 +430,20 @@ function OperatorPage() {
                     </div>
 
                     <form onSubmit={handleSubmit}>
-                        <div className="flex flex-wrap gap-3 items-end">
-                            <div className="flex-1 min-w-[140px]">
+                        <div className="flex flex-col gap-3">
+                            <div>
                                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
-                                    10-28
+                                    NCS
                                 </label>
                                 <input
-                                    placeholder="Data berdasarkan RAPI Nusantara"
+                                    placeholder="JZ09VAG"
                                     value={form.ncs}
                                     onChange={(e) => setForm({ ...form, ncs: e.target.value.toUpperCase() })}
                                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-slate-800 text-sm placeholder:text-slate-300 outline-none transition-all uppercase focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary-light"
                                     required
                                 />
                             </div>
-                            <div className="flex-[2] min-w-[200px]">
+                            <div>
                                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wide block mb-1.5">
                                     Nama Operator
                                 </label>
@@ -413,12 +458,27 @@ function OperatorPage() {
                             <button
                                 type="submit"
                                 disabled={submitting}
-                                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-white text-sm font-semibold shadow-md hover:shadow-lg transition-all whitespace-nowrap disabled:opacity-50"
+                                className="w-full flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-primary to-secondary text-white text-sm font-semibold shadow-md hover:shadow-lg transition-all disabled:opacity-50"
                             >
                                 Tambah
                             </button>
                         </div>
                     </form>
+                </div>
+
+                <div className="bg-white/75 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-xl p-5 mb-4">
+                    <div className="relative">
+                        <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        <input
+                            type="text"
+                            placeholder="Cari nama atau NCS..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 bg-white text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary-light"
+                        />
+                    </div>
                 </div>
 
                 <div className="bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-xl overflow-hidden">
@@ -430,7 +490,7 @@ function OperatorPage() {
                         </div>
                         <div>
                             <h2 className="text-sm font-bold text-slate-800 leading-tight">Daftar Operator</h2>
-                            <p className="text-xs text-slate-400 mt-0.5">{users.length} operator terdaftar</p>
+                            <p className="text-xs text-slate-400 mt-0.5">{filteredUsers.length} operator ditampilkan</p>
                         </div>
                     </div>
 
@@ -452,14 +512,14 @@ function OperatorPage() {
                                             Memuat data...
                                         </td>
                                     </tr>
-                                ) : users.length === 0 ? (
+                                ) : filteredUsers.length === 0 ? (
                                     <tr>
                                         <td colSpan={5} className="py-12 text-center text-slate-400 text-sm">
-                                            Belum ada operator terdaftar
+                                            {searchQuery ? 'Tidak ada hasil pencarian' : 'Belum ada operator terdaftar'}
                                         </td>
                                     </tr>
                                 ) : (
-                                    users.map((user, idx) => (
+                                    filteredUsers.map((user, idx) => (
                                         <tr key={user.id} className="hover:bg-primary-light/30 transition-colors">
                                             <td className="px-5 py-3.5 text-slate-400 text-xs w-10">
                                                 {idx + 1}
@@ -478,11 +538,7 @@ function OperatorPage() {
                                                 </div>
                                             </td>
                                             <td className="px-5 py-3.5">
-                                                <span className={`inline-block font-semibold px-2.5 py-1 rounded-lg text-xs ${
-                                                    user.role === 'admin' 
-                                                        ? 'text-purple-700 bg-purple-50 border border-purple-200' 
-                                                        : 'text-primary bg-primary-light border border-primary'
-                                                }`}>
+                                                <span className={`inline-block font-semibold px-2.5 py-1 rounded-lg text-xs border ${getRoleBadgeColor(user.role)}`}>
                                                     {user.role}
                                                 </span>
                                             </td>
