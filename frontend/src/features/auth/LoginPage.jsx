@@ -16,7 +16,7 @@ function LoginPage() {
 
         try {
             await login(ncs);
-            navigate('/');
+            navigate('/dashboard/');
         } catch (err) {
             setError(err.response?.data?.errors?.ncs?.[0] || 'NCS tidak ditemukan');
         } finally {

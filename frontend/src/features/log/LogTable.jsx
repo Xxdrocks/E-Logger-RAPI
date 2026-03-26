@@ -1,15 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 function LogTable({ logs = [], refresh, session }) {
     const [deletingId, setDeletingId] = useState(null);
     const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
+    const [displayedLogs, setDisplayedLogs] = useState(logs);
+
+    useEffect(() => {
+        setDisplayedLogs(logs);
+    }, [logs]);
 
     const handleDelete = async (id) => {
         setDeletingId(id);
         try {
-            await axios.delete(`https://rumahrapi.com/backend/api/logs/${id}`);
-            refresh();
+            await axios.delete(`http://127.0.0.1:8000/api/logs/${id}`);
+            setDisplayedLogs(prev => prev.filter(log => log.id !== id));
         } catch (error) {
             console.error("Delete error:", error);
         } finally {
@@ -18,29 +23,32 @@ function LogTable({ logs = [], refresh, session }) {
     };
 
     const handleDeleteAll = async () => {
-        try {
-            await axios.post("https://rumahrapi.com/backend/api/logs/delete-all");
-            refresh();
-            setShowDeleteAllModal(false);
-        } catch (error) {
-            console.error("Delete all error:", error);
-        }
+        setDisplayedLogs([]);
+        setShowDeleteAllModal(false);
     };
 
     const handleExport = async () => {
         const ket = session?.keterangan || 'semua_data';
+        const pencatatNcs = session?.pencatat_ncs || '';
         const token = localStorage.getItem('token');
 
         const today = new Date();
-        const day = String(today.getDate()).padStart(2, '0');
-        const month = String(today.getMonth() + 1).padStart(2, '0');
         const year = today.getFullYear();
-        const fileName = `${day}-${month}-${year}_${ket}.xlsx`;
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        const fileName = `${year}-${month}-${day}-${pencatatNcs}-${ket}.xlsx`;
 
         try {
-            const response = await axios.get('https://rumahrapi.com/backend/api/logs/export', {
-                params: { keterangan: ket },
-                headers: { Authorization: `Bearer ${token}` },
+            const response = await axios.post('http://127.0.0.1:8000/api/logs/export', {
+                keterangan: ket,
+                frequency: session?.frequency,
+                pencatat_ncs: pencatatNcs,
+                displayed_logs: displayedLogs 
+            }, {
+                headers: { 
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
                 responseType: 'blob'
             });
 
@@ -76,14 +84,14 @@ function LogTable({ logs = [], refresh, session }) {
                                 </svg>
                             </div>
                             <div>
-                                <h3 className="text-lg font-bold text-slate-900">Konfirmasi Hapus Semua</h3>
-                                <p className="text-sm text-slate-500 mt-0.5">Tindakan ini tidak dapat dibatalkan</p>
+                                <h3 className="text-lg font-bold text-slate-900">Hapus Tampilan</h3>
+                                <p className="text-sm text-slate-500 mt-0.5">Clear tabel (data tetap di database)</p>
                             </div>
                         </div>
 
                         <p className="text-sm text-slate-600 mb-6">
-                            Apakah Anda yakin ingin menghapus <strong>semua {logs.length} log</strong>?
-                            Data yang sudah dihapus tidak dapat dikembalikan.
+                            Apakah Anda yakin ingin menghapus <strong>{displayedLogs.length} log dari tampilan</strong>?
+                            Data tetap tersimpan di database dan bisa di-export.
                         </p>
 
                         <div className="flex items-center gap-3 justify-end">
@@ -95,9 +103,9 @@ function LogTable({ logs = [], refresh, session }) {
                             </button>
                             <button
                                 onClick={handleDeleteAll}
-                                className="px-5 py-2.5 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 shadow-md hover:shadow-lg transition-all"
+                                className="px-5 py-2.5 rounded-xl bg-orange-600 text-white text-sm font-semibold hover:bg-orange-700 shadow-md hover:shadow-lg transition-all"
                             >
-                                Ya, Hapus Semua
+                                Ya, Clear Tampilan
                             </button>
                         </div>
                     </div>
@@ -113,19 +121,19 @@ function LogTable({ logs = [], refresh, session }) {
                     </div>
                     <div>
                         <h2 className="text-base font-bold text-slate-800">Riwayat Log</h2>
-                        <p className="text-xs text-slate-400 mt-0.5">{logs.length} entri tersedia</p>
+                        <p className="text-xs text-slate-400 mt-0.5">{displayedLogs.length} entri ditampilkan</p>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-2.5">
                     <button
                         onClick={() => setShowDeleteAllModal(true)}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 hover:border-red-300 text-sm font-semibold transition-all duration-200"
+                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-100 hover:border-orange-300 text-sm font-semibold transition-all duration-200"
                     >
                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
-                        Hapus Semua
+                        Clear Tampilan
                     </button>
 
                     <button
@@ -152,7 +160,7 @@ function LogTable({ logs = [], refresh, session }) {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-50">
-                        {logs.length === 0 ? (
+                        {displayedLogs.length === 0 ? (
                             <tr>
                                 <td colSpan={7} className="py-16 text-center">
                                     <div className="flex flex-col items-center gap-3 text-slate-400">
@@ -162,14 +170,14 @@ function LogTable({ logs = [], refresh, session }) {
                                             </svg>
                                         </div>
                                         <div>
-                                            <p className="font-semibold text-slate-500 text-sm">Belum ada data log</p>
-                                            <p className="text-xs text-slate-400 mt-0.5">Tambahkan log baru menggunakan form di atas</p>
+                                            <p className="font-semibold text-slate-500 text-sm">Tidak ada data ditampilkan</p>
+                                            <p className="text-xs text-slate-400 mt-0.5">Refresh halaman untuk reload data</p>
                                         </div>
                                     </div>
                                 </td>
                             </tr>
                         ) : (
-                            logs.map((log) => (
+                            displayedLogs.map((log) => (
                                 <tr key={log.id} className="group hover:bg-primary-light/40 transition-colors duration-150">
                                     <td className="px-5 py-3.5">
                                         <span className="inline-flex items-center gap-1.5 font-mono font-semibold text-primary px-2.5 py-0.5 rounded-lg text-xs">
@@ -193,10 +201,16 @@ function LogTable({ logs = [], refresh, session }) {
                                    
                                     <td className="px-5 py-3.5">
                                         <div className="flex items-center gap-2">
-                                            <div className="w-6 h-6 rounded-full bg-gradient-to-br from-secondary to-primary flex items-center justify-center text-white text-[10px] font-bold shrink-0">
-                                                {(log.nama ?? "?")[0].toUpperCase()}
-                                            </div>
-                                            <span className="text-slate-700 font-semibold text-xs">{log.nama ?? "-"}</span>
+                                            {log.nama ? (
+                                                <>
+                                                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-secondary to-primary flex items-center justify-center text-white text-[10px] font-bold shrink-0">
+                                                        {log.nama[0].toUpperCase()}
+                                                    </div>
+                                                    <span className="text-slate-700 font-semibold text-xs">{log.nama}</span>
+                                                </>
+                                            ) : (
+                                                <span className="text-red-500 italic text-xs">Belum terdaftar</span>
+                                            )}
                                         </div>
                                     </td>
                                     <td className="px-5 py-3.5">
@@ -230,13 +244,13 @@ function LogTable({ logs = [], refresh, session }) {
                 </table>
             </div>
 
-            {logs.length > 0 && (
+            {displayedLogs.length > 0 && (
                 <div className="px-7 py-3.5 bg-slate-50/60 border-t border-slate-100 flex items-center justify-between">
                     <p className="text-xs text-slate-400">
-                        Menampilkan <span className="font-semibold text-slate-600">{logs.length}</span> entri
+                        Menampilkan <span className="font-semibold text-slate-600">{displayedLogs.length}</span> entri
                     </p>
                     <div className="flex gap-1">
-                        {[...Array(Math.min(3, Math.ceil(logs.length / 10)))].map((_, i) => (
+                        {[...Array(Math.min(3, Math.ceil(displayedLogs.length / 10)))].map((_, i) => (
                             <div key={i} className={`w-1.5 h-1.5 rounded-full ${i === 0 ? "bg-primary" : "bg-slate-300"}`} />
                         ))}
                     </div>

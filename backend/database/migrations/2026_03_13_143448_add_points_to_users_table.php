@@ -9,13 +9,20 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-   public function up(): void
+    public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
             $table->integer('points')->default(0)->after('role');
             $table->integer('total_as_pencatat')->default(0)->after('points');
             $table->integer('total_as_participant')->default(0)->after('total_as_pencatat');
             $table->timestamp('points_last_updated')->nullable()->after('total_as_participant');
+        });
+
+        Schema::create('settings', function (Blueprint $table) {
+            $table->id();
+            $table->string('key')->unique();
+            $table->text('value')->nullable();
+            $table->timestamps();
         });
     }
 
@@ -27,5 +34,7 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn(['points', 'total_as_pencatat', 'total_as_participant', 'points_last_updated']);
         });
+
+        Schema::dropIfExists('settings');
     }
 };

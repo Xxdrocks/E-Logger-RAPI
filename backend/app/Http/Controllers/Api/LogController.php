@@ -5,9 +5,11 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Log;
 use App\Models\User;
+use App\Models\Approval;
 use App\Exports\LogsExport;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\DB;
 
 class LogController extends Controller
 {
@@ -29,16 +31,49 @@ class LogController extends Controller
             'pencatat_nama' => 'nullable|string',
         ]);
 
-        $user = User::where('ncs', $validated['ncs_1028'])->first();
-        if (!$user) {
+        DB::beginTransaction();
+
+        try {
+
+            $user = User::where('ncs', $validated['ncs_1028'])->first();
+            if (!$user) {
+                $validated['nama'] = null;
+            } else {
+                $validated['nama'] = $user->nama;
+            }
+
+
+            $log = Log::create($validated);
+
+
+            Approval::create([
+                'log_id' => $log->id,
+                'frequency' => $validated['frequency'],
+                'keterangan' => $validated['keterangan'],
+                'ncs_1028' => $validated['ncs_1028'],
+                'nama' => $validated['nama'],
+                'zzd' => $validated['zzd'],
+                'pencatat_ncs' => $validated['pencatat_ncs'],
+                'pencatat_nama' => $validated['pencatat_nama'],
+                'status' => 'pending',
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Log berhasil disimpan. Menunggu approval admin.',
+                'log' => $log
+            ], 201);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
-                'message' => 'NCS belum terdaftar di database. Silakan hubungi admin.'
-            ], 422);
+                'message' => 'Gagal menyimpan log',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        $log = Log::create($validated);
-        return response()->json($log, 201);
     }
 
     public function destroy(Log $log)
@@ -55,8 +90,14 @@ class LogController extends Controller
 
     public function export(Request $request)
     {
+        $frequency = $request->input('frequency', '');
         $keterangan = $request->input('keterangan', 'semua_data');
-        return Excel::download(new LogsExport($keterangan), 'logs.xlsx');
+        $pencatat_ncs = $request->input('pencatat_ncs', '');
+
+        $date = now()->format('Y-m-d');
+        $filename = "{$date}-{$pencatat_ncs}-{$keterangan}.xlsx";
+
+        return Excel::download(new LogsExport($keterangan), $filename);
     }
 
     public function searchNcs(Request $request)
@@ -85,6 +126,8 @@ class LogController extends Controller
             'pencatat_nama' => 'nullable|string',
         ]);
 
+        DB::beginTransaction();
+
         try {
             $file = $request->file('file');
             $data = Excel::toArray([], $file);
@@ -108,42 +151,47 @@ class LogController extends Controller
                 }
 
                 $ncs = trim(strtoupper($row[0]));
-
                 $user = User::where('ncs', $ncs)->first();
-                if (!$user) {
-                    $errors[] = [
-                        'row' => $index + 1,
-                        'ncs' => $ncs,
-                        'message' => 'NCS tidak terdaftar',
-                    ];
-                    $skipped++;
-                    continue;
-                }
-
+                $nama = $user ? $user->nama : null;
                 $zzd = (strlen($ncs) >= 4) ? substr($ncs, 2, 2) : '';
 
-                Log::create([
+                $log = Log::create([
                     'frequency' => $request->frequency,
                     'keterangan' => $request->keterangan,
                     'ncs_1028' => $ncs,
-                    'nama' => $user->nama,
+                    'nama' => $nama,
                     'zzd' => $zzd,
                     'pencatat_ncs' => $request->pencatat_ncs,
                     'pencatat_nama' => $request->pencatat_nama,
                 ]);
 
+                Approval::create([
+                    'log_id' => $log->id,
+                    'frequency' => $request->frequency,
+                    'keterangan' => $request->keterangan,
+                    'ncs_1028' => $ncs,
+                    'nama' => $nama,
+                    'zzd' => $zzd,
+                    'pencatat_ncs' => $request->pencatat_ncs,
+                    'pencatat_nama' => $request->pencatat_nama,
+                    'status' => 'pending',
+                ]);
+
                 $imported++;
             }
 
+            DB::commit();
+
             return response()->json([
                 'success' => true,
-                'message' => "Import selesai: {$imported} berhasil, {$skipped} dilewati",
+                'message' => "Import selesai: {$imported} berhasil, {$skipped} dilewati. Menunggu approval admin.",
                 'imported' => $imported,
                 'skipped' => $skipped,
                 'errors' => $errors,
             ]);
 
         } catch (\Exception $e) {
+            DB::rollBack();
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat import',

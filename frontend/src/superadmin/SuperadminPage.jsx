@@ -2,33 +2,42 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
-
 function SuperadminPanel() {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [toast, setToast] = useState(null);
+    const [websiteLocked, setWebsiteLocked] = useState(false);
+    const [lockDuration, setLockDuration] = useState(60);
+    const [remainingTime, setRemainingTime] = useState(null);
+    const [showLockModal, setShowLockModal] = useState(false);
+    const [togglingLock, setTogglingLock] = useState(false);
     const navigate = useNavigate();
+    const [unlockAt, setUnlockAt] = useState('');
 
     useEffect(() => {
         fetchStats();
+        const interval = setInterval(fetchStats, 30000);
+        return () => clearInterval(interval);
     }, []);
 
     const fetchStats = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.get('https://rumahrapi.com/backend/api/stats/overview', {
+            const res = await axios.get('http://127.0.0.1:8000/api/stats/overview', {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
 
             setStats(res.data);
+            setWebsiteLocked(res.data.website_lock?.is_locked || false);
+            setRemainingTime(res.data.website_lock?.locked_until || null);
         } catch (error) {
             console.error('Error fetching stats:', error);
 
             if (error.response?.status === 403) {
                 showToast('Akses ditolak. Hanya superadmin yang bisa mengakses halaman ini.', 'error');
-                setTimeout(() => navigate('/'), 2000);
+                setTimeout(() => navigate('/dashboard'), 2000);
             }
         } finally {
             setLoading(false);
@@ -42,8 +51,37 @@ function SuperadminPanel() {
 
     const handleBackup = () => {
         const token = localStorage.getItem('token');
+        window.open(`http://127.0.0.1:8000/api/backup/all?token=${token}`, '_blank');
+    };
 
-        window.open(`https://rumahrapi.com/backend/api/backup/all?token=${token}`, '_blank');
+    const handleToggleLock = async (lock) => {
+        setTogglingLock(true);
+
+        try {
+            const token = localStorage.getItem('token');
+            const res = await axios.post(
+                'http://127.0.0.1:8000/api/website-lock/toggle',
+                {
+                    locked: lock,
+                    unlock_at: lock ? unlockAt : null
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            setWebsiteLocked(lock);
+            showToast(res.data.message, 'success');
+            setShowLockModal(false);
+            fetchStats();
+        } catch (error) {
+            console.error('Toggle lock error:', error);
+            showToast('Gagal toggle website lock', 'error');
+        } finally {
+            setTogglingLock(false);
+        }
     };
 
     const formatDate = (dateString) => {
@@ -81,6 +119,59 @@ function SuperadminPanel() {
                     </div>
                 )}
 
+                {showLockModal && (
+                    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+                        <div className="bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl">
+                            <h2 className="text-2xl font-bold text-slate-900 mb-2">
+                                {websiteLocked ? 'Buka Website' : 'Kunci Website'}
+                            </h2>
+                            <p className="text-sm text-slate-600 mb-6">
+                                {websiteLocked
+                                    ? 'Website akan dibuka untuk semua user'
+                                    : 'Member tidak akan bisa akses LogPage selama website terkunci'
+                                }
+                            </p>
+
+                            {!websiteLocked && (
+                                <div className="mb-6">
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">
+                                        Durasi Kunci (menit)
+                                    </label>
+                                    <input
+                                        type="datetime-local"
+                                        value={unlockAt}
+                                        onChange={(e) => setUnlockAt(e.target.value)}
+                                        className="w-full px-4 py-2.5 rounded-xl border-2 border-slate-200 focus:border-primary"
+                                    />
+                                    <p className="text-xs text-slate-500 mt-1">
+                                        Website akan otomatis terbuka setelah {lockDuration} menit
+                                    </p>
+                                </div>
+                            )}
+
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setShowLockModal(false)}
+                                    disabled={togglingLock}
+                                    className="flex-1 px-6 py-3 rounded-xl border-2 border-slate-200 text-slate-600 font-semibold hover:bg-slate-50 transition-all"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    onClick={() => handleToggleLock(!websiteLocked)}
+                                    disabled={togglingLock}
+                                    className={`flex-1 px-6 py-3 rounded-xl font-semibold text-white shadow-lg hover:shadow-xl transition-all ${websiteLocked
+                                        ? 'bg-gradient-to-r from-green-500 to-emerald-500'
+                                        : 'bg-gradient-to-r from-red-500 to-orange-500'
+                                        }`}
+                                >
+                                    {togglingLock ? 'Processing...' : (websiteLocked ? 'Buka Website' : 'Kunci Website')}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 <div className="mb-8">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div>
@@ -89,21 +180,72 @@ function SuperadminPanel() {
                             </h1>
                             <p className="text-sm text-slate-600">Monitor dan kelola seluruh sistem E-Logger RAPI</p>
                         </div>
-                        <button
-                            onClick={handleBackup}
-                            className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                            </svg>
-                            Backup All Data
-                        </button>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowLockModal(true)}
+                                className={`px-6 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center gap-2 ${websiteLocked
+                                    ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white'
+                                    : 'bg-gradient-to-r from-red-500 to-orange-500 text-white'
+                                    }`}
+                            >
+                                {websiteLocked ? (
+                                    <>
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                                        </svg>
+                                        Website Terkunci
+                                        {remainingTime && (
+                                            <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">
+                                                sampai {new Date(remainingTime).toLocaleString('id-ID')}
+                                            </span>
+                                        )}
+                                    </>
+                                ) : (
+                                    <>
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                        </svg>
+                                        Website Terbuka
+                                    </>
+                                )}
+                            </button>
+                            <button
+                                onClick={handleBackup}
+                                className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                </svg>
+                                Backup
+                            </button>
+                        </div>
                     </div>
                 </div>
 
+                {websiteLocked && (
+                    <div className="mb-6 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-2xl p-6 shadow-xl">
+                        <div className="flex items-center gap-4">
+                            <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
+                                <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                            </div>
+                            <div className="flex-1">
+                                <h3 className="font-bold text-lg">Website Sedang Terkunci</h3>
+                                <p className="text-sm text-white/90">
+                                    {remainingTime
+                                        ? `Member tidak dapat mengakses LogPage. Akan terbuka otomatis dalam ${remainingTime} menit.`
+                                        : 'Member tidak dapat mengakses LogPage sampai dibuka manual.'
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
                     <button
-                        onClick={() => navigate('/operators')}
+                        onClick={() => navigate('/dashboard/operators')}
                         className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border-2 border-purple-200 hover:border-purple-400 transition-all group"
                     >
                         <div className="flex items-center gap-4">
@@ -120,7 +262,7 @@ function SuperadminPanel() {
                     </button>
 
                     <button
-                        onClick={() => navigate('/logger')}
+                        onClick={() => navigate('/dashboard/logger')}
                         className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border-2 border-blue-200 hover:border-blue-400 transition-all group"
                     >
                         <div className="flex items-center gap-4">
@@ -137,7 +279,7 @@ function SuperadminPanel() {
                     </button>
 
                     <button
-                        onClick={() => navigate('/schedule')}
+                        onClick={() => navigate('/dashboard/schedule')}
                         className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border-2 border-orange-200 hover:border-orange-400 transition-all group"
                     >
                         <div className="flex items-center gap-4">
@@ -203,7 +345,7 @@ function SuperadminPanel() {
                                             <div className="flex items-center justify-between">
                                                 <div>
                                                     <p className="font-mono font-bold text-primary text-sm">{log.ncs_1028}</p>
-                                                    <p className="text-xs text-slate-600">{log.nama}</p>
+                                                    <p className="text-xs text-slate-600">{log.nama || 'Belum terdaftar'}</p>
                                                 </div>
                                                 <div className="text-right">
                                                     <p className="text-xs font-semibold text-slate-700">{log.frequency}</p>

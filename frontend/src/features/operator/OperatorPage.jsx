@@ -4,8 +4,10 @@ import axios from 'axios';
 function OperatorPage() {
     const [users, setUsers] = useState([]);
     const [filteredUsers, setFilteredUsers] = useState([]);
+    const [approvals, setApprovals] = useState([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [loading, setLoading] = useState(true);
+    const [approvalsLoading, setApprovalsLoading] = useState(true);
     const [form, setForm] = useState({ ncs: '', nama: '', role: 'member' });
     const [submitting, setSubmitting] = useState(false);
     const [toast, setToast] = useState(null);
@@ -16,6 +18,7 @@ function OperatorPage() {
     const [importFile, setImportFile] = useState(null);
     const [importing, setImporting] = useState(false);
     const [importResult, setImportResult] = useState(null);
+    const [processingApproval, setProcessingApproval] = useState(null);
 
     const showToast = (message, color = 'bg-primary') => {
         setToast({ message, color });
@@ -24,7 +27,7 @@ function OperatorPage() {
 
     const fetchUsers = async () => {
         try {
-            const res = await axios.get('https://rumahrapi.com/backend/api/users');
+            const res = await axios.get('http://127.0.0.1:8000/api/users');
             setUsers(res.data);
         } catch (err) {
             console.error(err);
@@ -33,8 +36,20 @@ function OperatorPage() {
         }
     };
 
+    const fetchApprovals = async () => {
+        try {
+            const res = await axios.get('http://127.0.0.1:8000/api/approvals');
+            setApprovals(res.data);
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setApprovalsLoading(false);
+        }
+    };
+
     useEffect(() => {
         fetchUsers();
+        fetchApprovals();
     }, []);
 
     useEffect(() => {
@@ -67,11 +82,38 @@ function OperatorPage() {
         setFilteredUsers(filtered);
     };
 
+    const handleApprove = async (id) => {
+        setProcessingApproval(id);
+        try {
+            await axios.post(`http://127.0.0.1:8000/api/approvals/${id}/approve`);
+            showToast('✓ Log berhasil di-approve, poin ditambahkan', 'bg-green-500');
+            fetchApprovals();
+            fetchUsers();
+        } catch (err) {
+            showToast('✕ Gagal approve log', 'bg-red-500');
+        } finally {
+            setProcessingApproval(null);
+        }
+    };
+
+    const handleReject = async (id) => {
+        setProcessingApproval(id);
+        try {
+            await axios.post(`http://127.0.0.1:8000/api/approvals/${id}/reject`);
+            showToast('✓ Log di-reject, poin tidak ditambahkan', 'bg-orange-500');
+            fetchApprovals();
+        } catch (err) {
+            showToast('✕ Gagal reject log', 'bg-red-500');
+        } finally {
+            setProcessingApproval(null);
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSubmitting(true);
         try {
-            await axios.post('https://rumahrapi.com/backend/api/users', form);
+            await axios.post('http://127.0.0.1:8000/api/users', form);
             setForm({ ncs: '', nama: '', role: 'member' });
             showToast('✓ Operator berhasil ditambahkan');
             fetchUsers();
@@ -93,7 +135,7 @@ function OperatorPage() {
     const handleUpdate = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`https://rumahrapi.com/backend/api/users/${editTarget.id}`, editForm);
+            await axios.put(`http://127.0.0.1:8000/api/users/${editTarget.id}`, editForm);
             showToast('✓ Operator berhasil diupdate');
             setEditTarget(null);
             fetchUsers();
@@ -110,7 +152,7 @@ function OperatorPage() {
         
         setDeletingId(id);
         try {
-            await axios.delete(`https://rumahrapi.com/backend/api/users/${id}`);
+            await axios.delete(`http://127.0.0.1:8000/api/users/${id}`);
             showToast('✓ Operator berhasil dihapus');
             fetchUsers();
         } catch (err) {
@@ -149,7 +191,7 @@ function OperatorPage() {
             const formData = new FormData();
             formData.append('file', importFile);
 
-            const res = await axios.post('https://rumahrapi.com/backend/api/users/bulk-import', formData, {
+            const res = await axios.post('http://127.0.0.1:8000/api/users/bulk-import', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }
@@ -186,6 +228,17 @@ function OperatorPage() {
             member: 'bg-slate-50 text-slate-700 border-slate-200'
         };
         return colors[role] || colors.member;
+    };
+
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('id-ID', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
     };
 
     return (
@@ -380,7 +433,7 @@ function OperatorPage() {
                 </div>
             )}
 
-            <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-10">
+            <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 py-10">
                 <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
                     <div className="flex items-center gap-3.5">
                         <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg shadow-primary/30">
@@ -390,7 +443,7 @@ function OperatorPage() {
                         </div>
                         <div>
                             <h1 className="text-2xl font-bold text-slate-900 leading-tight">Manajemen Operator</h1>
-                            <p className="text-xs text-slate-500 mt-0.5">Kelola data operator RAPI</p>
+                            <p className="text-xs text-slate-500 mt-0.5">Kelola data operator RAPI & approval log</p>
                         </div>
                     </div>
 
@@ -405,7 +458,7 @@ function OperatorPage() {
                             <span className="hidden sm:inline">Import</span>
                         </button>
                         <a
-                            href="/"
+                            href="/dashboard"
                             className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-white transition-all"
                         >
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
@@ -415,6 +468,85 @@ function OperatorPage() {
                         </a>
                     </div>
                 </div>
+
+                {/* APPROVAL TABLE */}
+                {approvals.length > 0 && (
+                    <div className="bg-amber-50/70 backdrop-blur-md border-2 border-amber-300 rounded-2xl shadow-xl overflow-hidden mb-6">
+                        <div className="flex items-center gap-3 px-7 py-5 bg-amber-100 border-b border-amber-200">
+                            <div className="w-9 h-9 rounded-xl bg-amber-500 flex items-center justify-center shadow-md">
+                                <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h2 className="text-sm font-bold text-amber-900 leading-tight">Pending Approval</h2>
+                                <p className="text-xs text-amber-700 mt-0.5">{approvals.length} log menunggu approval</p>
+                            </div>
+                        </div>
+
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                    <tr className="bg-amber-50 border-b border-amber-100">
+                                        <th className="px-5 py-3.5 text-left text-xs font-bold text-amber-800 uppercase tracking-wide">No</th>
+                                        <th className="px-5 py-3.5 text-left text-xs font-bold text-amber-800 uppercase tracking-wide">Tanggal</th>
+                                        <th className="px-5 py-3.5 text-left text-xs font-bold text-amber-800 uppercase tracking-wide">10-28</th>
+                                        <th className="px-5 py-3.5 text-left text-xs font-bold text-amber-800 uppercase tracking-wide">Nama</th>
+                                        <th className="px-5 py-3.5 text-left text-xs font-bold text-amber-800 uppercase tracking-wide">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-amber-100 bg-white">
+                                    {approvalsLoading ? (
+                                        <tr>
+                                            <td colSpan={5} className="py-12 text-center text-slate-400 text-sm">
+                                                Memuat data...
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        approvals.map((approval, idx) => (
+                                            <tr key={approval.id} className="hover:bg-amber-50/50 transition-colors">
+                                                <td className="px-5 py-3.5 text-slate-600 text-xs">
+                                                    {idx + 1}
+                                                </td>
+                                                <td className="px-5 py-3.5 text-slate-700 text-xs">
+                                                    {formatDate(approval.created_at)}
+                                                </td>
+                                                <td className="px-5 py-3.5">
+                                                    <span className="inline-block font-mono font-bold text-primary bg-primary-light border border-primary px-2.5 py-1 rounded-lg text-xs">
+                                                        {approval.ncs_1028}
+                                                    </span>
+                                                </td>
+                                                <td className="px-5 py-3.5 text-slate-700 text-sm">
+                                                    {approval.nama || (
+                                                        <span className="text-red-500 italic text-xs">Belum terdaftar</span>
+                                                    )}
+                                                </td>
+                                                <td className="px-5 py-3.5">
+                                                    <div className="flex items-center gap-2">
+                                                        <button
+                                                            onClick={() => handleApprove(approval.id)}
+                                                            disabled={processingApproval === approval.id}
+                                                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-green-50 text-green-600 border border-green-200 text-xs font-semibold hover:bg-green-100 transition-all disabled:opacity-50"
+                                                        >
+                                                            ✓ Approve
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleReject(approval.id)}
+                                                            disabled={processingApproval === approval.id}
+                                                            className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-red-50 text-red-500 border border-red-200 text-xs font-semibold hover:bg-red-100 transition-all disabled:opacity-50"
+                                                        >
+                                                            ✗ Reject
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                )}
 
                 <div className="bg-white/75 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-xl p-7 mb-6">
                     <div className="flex items-center gap-3 mb-6 pb-5 border-b border-slate-100">

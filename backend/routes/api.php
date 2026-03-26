@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\ApprovalController;
 use App\Http\Controllers\Api\BackupController;
 use App\Http\Controllers\Api\LogController;
 use App\Http\Controllers\Api\PointController;
@@ -9,6 +10,8 @@ use App\Http\Controllers\Api\UserController;
 
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login']);
+
+Route::get('/website-lock/status', [BackupController::class, 'checkWebsiteLock']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [UserController::class, 'logout']);
@@ -27,7 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/logs', [LogController::class, 'index']);
         Route::post('/logs', [LogController::class, 'store']);
         Route::post('/logs/bulk-import', [LogController::class, 'bulkImport']);
-        Route::get('/logs/export', [LogController::class, 'export']);
+        Route::post('/logs/export', [LogController::class, 'export']);
         Route::post('/logs/delete-all', [LogController::class, 'deleteAll']);
         Route::delete('/logs/{log}', [LogController::class, 'destroy']);
     });
@@ -43,6 +46,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::delete('/users/{user}', [UserController::class, 'destroy']);
     });
 
+    Route::middleware('admin')->group(function () {
+        Route::get('/approvals', [ApprovalController::class, 'index']);
+        Route::post('/approvals/{id}/approve', [ApprovalController::class, 'approve']);
+        Route::post('/approvals/{id}/reject', [ApprovalController::class, 'reject']);
+        Route::delete('/approvals/{id}', [ApprovalController::class, 'destroy']);
+    });
+
     Route::get('/points/leaderboard', [PointController::class, 'leaderboard']);
     Route::get('/points/user/{ncs}', [PointController::class, 'userDetail']);
 
@@ -53,5 +63,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('superadmin')->group(function () {
         Route::get('/backup/all', [BackupController::class, 'downloadBackup']);
         Route::get('/stats/overview', [BackupController::class, 'statsOverview']);
+        Route::post('/website-lock/toggle', [BackupController::class, 'toggleWebsiteLock']);
     });
 });

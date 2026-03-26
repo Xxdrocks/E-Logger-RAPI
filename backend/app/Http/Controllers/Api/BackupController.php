@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Log;
 use App\Models\Schedule;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
@@ -132,7 +133,6 @@ class BackupController extends Controller
 
             $writer->save('php://output');
             exit;
-
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -153,20 +153,33 @@ class BackupController extends Controller
             $logsToday = Log::whereDate('created_at', today())->count();
             $logsThisWeek = Log::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count();
             $logsThisMonth = Log::whereMonth('created_at', now()->month)
-                                ->whereYear('created_at', now()->year)
-                                ->count();
+                ->whereYear('created_at', now()->year)
+                ->count();
 
             $totalSchedules = Schedule::count();
             $upcomingSchedules = Schedule::where('event_date', '>=', now()->toDateString())->count();
             $pastSchedules = Schedule::where('event_date', '<', now()->toDateString())->count();
 
             $recentLogs = Log::orderBy('created_at', 'desc')
-                            ->limit(10)
-                            ->get();
+                ->limit(10)
+                ->get();
 
             $recentSchedules = Schedule::orderBy('event_date', 'desc')
-                                      ->limit(5)
-                                      ->get();
+                ->limit(5)
+                ->get();
+
+            $websiteLocked = false;
+            $lockedUntil = null;
+            $remainingMinutes = null;
+
+            if (DB::getSchemaBuilder()->hasTable('settings')) {
+                try {
+                    $websiteLocked = $this->isWebsiteLocked();
+                    $lockedUntil = $this->getSetting('locked_until');
+                    $remainingMinutes = $this->getRemainingLockTime();
+                } catch (\Exception $e) {
+                }
+            }
 
             return response()->json([
                 'users' => [
@@ -188,6 +201,11 @@ class BackupController extends Controller
                     'past' => $pastSchedules,
                     'recent' => $recentSchedules,
                 ],
+                'website_lock' => [
+                    'is_locked' => $websiteLocked,
+                    'locked_until' => $lockedUntil,
+                    'remaining_minutes' => $remainingMinutes,
+                ],
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -195,5 +213,128 @@ class BackupController extends Controller
                 'message' => 'Gagal mengambil data stats: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Toggle website lock (Superadmin only)
+     */
+    public function toggleWebsiteLock(Request $request)
+    {
+        $request->validate([
+            'locked' => 'required|boolean',
+            'unlock_at' => 'nullable|date',
+        ]);
+
+        try {
+            $locked = $request->locked;
+            $unlockAt = $request->unlock_at;
+
+            $this->setSetting('website_locked', $locked ? 'true' : 'false');
+
+            if ($locked && $unlockAt) {
+                $this->setSetting('locked_until', $unlockAt);
+            } else {
+                $this->setSetting('locked_until', null);
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => $locked
+                    ? "Website dikunci sampai {$unlockAt}"
+                    : "Website dibuka kembali",
+                'is_locked' => $locked,
+                'locked_until' => $unlockAt,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal toggle website lock: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Check website lock status (Public)
+     */
+    public function checkWebsiteLock()
+    {
+        try {
+            $isLocked = $this->isWebsiteLocked();
+            $lockedUntil = $this->getSetting('locked_until');
+            $remainingMinutes = $this->getRemainingLockTime();
+
+            return response()->json([
+                'is_locked' => $isLocked,
+                'locked_until' => $lockedUntil,
+                'remaining_minutes' => $remainingMinutes,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'is_locked' => false,
+                'locked_until' => null,
+                'remaining_minutes' => null,
+            ]);
+        }
+    }
+
+    private function getSetting($key, $default = null)
+    {
+        if (!DB::getSchemaBuilder()->hasTable('settings')) {
+            return $default;
+        }
+
+        $setting = DB::table('settings')->where('key', $key)->first();
+        return $setting ? $setting->value : $default;
+    }
+
+    private function setSetting($key, $value)
+    {
+        if (!DB::getSchemaBuilder()->hasTable('settings')) {
+            return;
+        }
+
+        DB::table('settings')->updateOrInsert(
+            ['key' => $key],
+            ['value' => $value, 'updated_at' => now()]
+        );
+    }
+
+    private function isWebsiteLocked()
+    {
+        $locked = $this->getSetting('website_locked', 'false');
+
+        if ($locked === 'false') {
+            return false;
+        }
+
+        $lockedUntil = $this->getSetting('locked_until');
+
+        if ($lockedUntil) {
+            $unlockTime = \Carbon\Carbon::parse($lockedUntil);
+
+            if (now()->greaterThan($unlockTime)) {
+                $this->setSetting('website_locked', 'false');
+                $this->setSetting('locked_until', null);
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private function getRemainingLockTime()
+    {
+        $lockedUntil = $this->getSetting('locked_until');
+
+        if (!$lockedUntil) {
+            return null;
+        }
+
+        $unlockTime = \Carbon\Carbon::parse($lockedUntil);
+
+        if (now()->greaterThan($unlockTime)) {
+            return 0;
+        }
+
+        return now()->diffInMinutes($unlockTime);
     }
 }

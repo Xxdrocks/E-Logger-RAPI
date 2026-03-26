@@ -57,7 +57,7 @@ function LogForm({ refresh, session, setSession }) {
 
         if (value.length >= 2) {
             try {
-                const res = await axios.get(`https://rumahrapi.com/backend/api/logs/search-ncs?q=${value}`);
+                const res = await axios.get(`http://127.0.0.1:8000/api/logs/search-ncs?q=${value}`);
                 setPencatatSuggestions(res.data);
                 setShowPencatatSuggestions(true);
             } catch (err) {
@@ -90,7 +90,7 @@ function LogForm({ refresh, session, setSession }) {
 
         if (value.length >= 2) {
             try {
-                const res = await axios.get(`https://rumahrapi.com/backend/api/logs/search-ncs?q=${value}`);
+                const res = await axios.get(`http://127.0.0.1:8000/api/logs/search-ncs?q=${value}`);
                 setSuggestions(res.data);
                 setShowSuggestions(true);
             } catch (err) {
@@ -109,7 +109,7 @@ function LogForm({ refresh, session, setSession }) {
             if (!ncs) return;
 
             try {
-                const res = await axios.get(`https://rumahrapi.com/backend/api/logs/search-ncs?q=${ncs}`);
+                const res = await axios.get(`http://127.0.0.1:8000/api/logs/search-ncs?q=${ncs}`);
                 
                 const exactMatch = res.data.find(op => op.ncs.toLowerCase() === ncs.toLowerCase());
                 const partialMatch = res.data.find(op => op.ncs.toLowerCase().includes(ncs.toLowerCase()));
@@ -139,7 +139,7 @@ function LogForm({ refresh, session, setSession }) {
         if (!session || !ncs) return;
         setLoading(true);
         try {
-            await axios.post('https://rumahrapi.com/backend/api/logs', {
+            await axios.post('http://127.0.0.1:8000/api/logs', {
                 frequency: session.frequency,
                 keterangan: session.keterangan,
                 ncs_1028: ncs,
@@ -198,7 +198,7 @@ function LogForm({ refresh, session, setSession }) {
             formData.append('pencatat_ncs', session.pencatat_ncs);
             formData.append('pencatat_nama', session.pencatat_nama || '');
 
-            const res = await axios.post('https://rumahrapi.com/backend/api/logs/bulk-import', formData, {
+            const res = await axios.post('http://127.0.0.1:8000/api/logs/bulk-import', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
 

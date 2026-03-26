@@ -9,11 +9,10 @@ function Navbar() {
     const { user, logout, isAdmin } = useAuth();
 
     const navItems = [
-        { name: 'Home', path: '/', image: '/images/home.png' },
-        { name: 'Schedule', path: '/schedule', image: '/images/schedule.png' },
-        { name: 'Logger', path: '/logger', image: '/images/logger.png' },
-        { name : 'Points', path: '/points', image: '/images/points.png'},
-        { name: 'Hubungi Kami', path: '/contact', image: '/images/contact.png' },
+        { name: 'Home', path: '/dashboard/', image: '/images/home.png' },
+        { name: 'Schedule', path: '/dashboard/schedule', image: '/images/schedule.png' },
+        { name: 'Logger', path: '/dashboard//logger', image: '/images/logger.png' },
+        { name : 'Points', path: '/dashboard//points', image: '/images/points.png'},
     ];
 
 
