@@ -23,7 +23,7 @@ function SuperadminPanel() {
     const fetchStats = async () => {
         try {
             const token = localStorage.getItem('token');
-            const res = await axios.get('http://127.0.0.1:8000/api/stats/overview', {
+            const res = await axios.get('https://rumahrapi.com/backend/api/stats/overview', {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -51,7 +51,7 @@ function SuperadminPanel() {
 
     const handleBackup = () => {
         const token = localStorage.getItem('token');
-        window.open(`http://127.0.0.1:8000/api/backup/all?token=${token}`, '_blank');
+        window.open(`https://rumahrapi.com/backend/api/backup/all?token=${token}`, '_blank');
     };
 
     const handleToggleLock = async (lock) => {
@@ -60,7 +60,7 @@ function SuperadminPanel() {
         try {
             const token = localStorage.getItem('token');
             const res = await axios.post(
-                'http://127.0.0.1:8000/api/website-lock/toggle',
+                'https://rumahrapi.com/backend/api/website-lock/toggle',
                 {
                     locked: lock,
                     unlock_at: lock ? unlockAt : null

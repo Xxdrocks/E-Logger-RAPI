@@ -10,7 +10,7 @@ function ScheduleCard({ schedule, onEdit, onDelete }) {
 
     const { day, month } = formatDate(schedule.event_date);
     const imageUrl = schedule.image 
-        ? `http://127.0.0.1:8000/storage/${schedule.image}`
+        ? `https://rumahrapi.com/backend/storage/${schedule.image}`
         : '/images/default-event.jpg';
 
     const colors = [

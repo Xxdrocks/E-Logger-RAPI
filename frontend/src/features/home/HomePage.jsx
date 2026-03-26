@@ -30,8 +30,8 @@ function HomePage() {
     const fetchStats = async () => {
         try {
             const [usersRes, logsRes] = await Promise.all([
-                axios.get('http://127.0.0.1:8000/api/users'),
-                axios.get('http://127.0.0.1:8000/api/logs'),
+                axios.get('https://rumahrapi.com/backend/api/users'),
+                axios.get('https://rumahrapi.com/backend/api/logs'),
             ]);
 
             const logs = logsRes.data.data || [];
@@ -52,7 +52,7 @@ function HomePage() {
 
     const fetchSchedules = async () => {
         try {
-            const res = await axios.get('http://127.0.0.1:8000/api/schedules');
+            const res = await axios.get('https://rumahrapi.com/backend/api/schedules');
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             
@@ -96,12 +96,7 @@ function HomePage() {
                     </div>
                 ))}
 
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-white px-4">
-                    <img src="/images/logo-rapi.png" alt="Logo RAPI" className="w-48 md:w-64 mb-8" />
-                    <h1 className="text-4xl md:text-6xl font-extrabold text-center mb-4 tracking-tight">
-                        Radio Antar Republik Indonesia
-                    </h1>
-                </div>
+                
 
                 <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
                     {heroImages.map((_, idx) => (

@@ -27,7 +27,7 @@ function OperatorPage() {
 
     const fetchUsers = async () => {
         try {
-            const res = await axios.get('http://127.0.0.1:8000/api/users');
+            const res = await axios.get('https://rumahrapi.com/backend/api/users');
             setUsers(res.data);
         } catch (err) {
             console.error(err);
@@ -38,7 +38,7 @@ function OperatorPage() {
 
     const fetchApprovals = async () => {
         try {
-            const res = await axios.get('http://127.0.0.1:8000/api/approvals');
+            const res = await axios.get('https://rumahrapi.com/backend/api/approvals');
             setApprovals(res.data);
         } catch (err) {
             console.error(err);
@@ -85,7 +85,7 @@ function OperatorPage() {
     const handleApprove = async (id) => {
         setProcessingApproval(id);
         try {
-            await axios.post(`http://127.0.0.1:8000/api/approvals/${id}/approve`);
+            await axios.post(`https://rumahrapi.com/backend/api/approvals/${id}/approve`);
             showToast('✓ Log berhasil di-approve, poin ditambahkan', 'bg-green-500');
             fetchApprovals();
             fetchUsers();
@@ -99,7 +99,7 @@ function OperatorPage() {
     const handleReject = async (id) => {
         setProcessingApproval(id);
         try {
-            await axios.post(`http://127.0.0.1:8000/api/approvals/${id}/reject`);
+            await axios.post(`https://rumahrapi.com/backend/api/approvals/${id}/reject`);
             showToast('✓ Log di-reject, poin tidak ditambahkan', 'bg-orange-500');
             fetchApprovals();
         } catch (err) {
@@ -113,7 +113,7 @@ function OperatorPage() {
         e.preventDefault();
         setSubmitting(true);
         try {
-            await axios.post('http://127.0.0.1:8000/api/users', form);
+            await axios.post('https://rumahrapi.com/backend/api/users', form);
             setForm({ ncs: '', nama: '', role: 'member' });
             showToast('✓ Operator berhasil ditambahkan');
             fetchUsers();
@@ -135,7 +135,7 @@ function OperatorPage() {
     const handleUpdate = async (e) => {
         e.preventDefault();
         try {
-            await axios.put(`http://127.0.0.1:8000/api/users/${editTarget.id}`, editForm);
+            await axios.put(`https://rumahrapi.com/backend/api/users/${editTarget.id}`, editForm);
             showToast('✓ Operator berhasil diupdate');
             setEditTarget(null);
             fetchUsers();
@@ -152,7 +152,7 @@ function OperatorPage() {
         
         setDeletingId(id);
         try {
-            await axios.delete(`http://127.0.0.1:8000/api/users/${id}`);
+            await axios.delete(`https://rumahrapi.com/backend/api/users/${id}`);
             showToast('✓ Operator berhasil dihapus');
             fetchUsers();
         } catch (err) {
@@ -191,7 +191,7 @@ function OperatorPage() {
             const formData = new FormData();
             formData.append('file', importFile);
 
-            const res = await axios.post('http://127.0.0.1:8000/api/users/bulk-import', formData, {
+            const res = await axios.post('https://rumahrapi.com/backend/api/users/bulk-import', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data'
                 }

@@ -14,7 +14,7 @@ function LogPage() {
 
     const fetchLogs = async () => {
         try {
-            const res = await axios.get("http://127.0.0.1:8000/api/logs");
+            const res = await axios.get("https://rumahrapi.com/backend/api/logs");
             setLogs(res.data.data || []);
         } catch (error) {
             console.error("Gagal fetch logs:", error);
@@ -26,7 +26,7 @@ function LogPage() {
 
     const checkWebsiteLock = async () => {
         try {
-            const res = await axios.get('http://127.0.0.1:8000/api/website-lock/status');
+            const res = await axios.get('https://rumahrapi.com/backend/api/website-lock/status');
             setWebsiteLocked(res.data.is_locked);
             setRemainingTime(res.data.remaining_minutes);
         } catch (error) {

@@ -13,7 +13,7 @@ function LogTable({ logs = [], refresh, session }) {
     const handleDelete = async (id) => {
         setDeletingId(id);
         try {
-            await axios.delete(`http://127.0.0.1:8000/api/logs/${id}`);
+            await axios.delete(`https://rumahrapi.com/backend/api/logs/${id}`);
             setDisplayedLogs(prev => prev.filter(log => log.id !== id));
         } catch (error) {
             console.error("Delete error:", error);
@@ -39,7 +39,7 @@ function LogTable({ logs = [], refresh, session }) {
         const fileName = `${year}-${month}-${day}-${pencatatNcs}-${ket}.xlsx`;
 
         try {
-            const response = await axios.post('http://127.0.0.1:8000/api/logs/export', {
+            const response = await axios.post('https://rumahrapi.com/backend/api/logs/export', {
                 keterangan: ket,
                 frequency: session?.frequency,
                 pencatat_ncs: pencatatNcs,
@@ -203,9 +203,6 @@ function LogTable({ logs = [], refresh, session }) {
                                         <div className="flex items-center gap-2">
                                             {log.nama ? (
                                                 <>
-                                                    <div className="w-6 h-6 rounded-full bg-gradient-to-br from-secondary to-primary flex items-center justify-center text-white text-[10px] font-bold shrink-0">
-                                                        {log.nama[0].toUpperCase()}
-                                                    </div>
                                                     <span className="text-slate-700 font-semibold text-xs">{log.nama}</span>
                                                 </>
                                             ) : (
