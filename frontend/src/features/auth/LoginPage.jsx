@@ -16,7 +16,7 @@ function LoginPage() {
 
         try {
             await login(ncs);
-            navigate('/dashboard/');
+            navigate('/dashboard/logger');
         } catch (err) {
             setError(err.response?.data?.errors?.ncs?.[0] || 'NCS tidak ditemukan');
         } finally {
@@ -66,14 +66,14 @@ function LoginPage() {
                         </button>
                     </form>
 
-                    <div className="mt-6 text-center">
+                    {/* <div className="mt-6 text-center">
                         <p className="text-sm text-slate-600">
                             NCS belum terdaftar?{' '}
                             <Link to="/register" className="text-primary font-semibold hover:text-primary-hover">
                                 Daftar disini
                             </Link>
                         </p>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </div>

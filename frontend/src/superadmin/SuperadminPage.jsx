@@ -37,7 +37,7 @@ function SuperadminPanel() {
 
             if (error.response?.status === 403) {
                 showToast('Akses ditolak. Hanya superadmin yang bisa mengakses halaman ini.', 'error');
-                setTimeout(() => navigate('/dashboard'), 2000);
+                setTimeout(() => navigate('/dashboard/logger'), 2000);
             }
         } finally {
             setLoading(false);

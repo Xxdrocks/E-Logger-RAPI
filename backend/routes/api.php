@@ -10,6 +10,17 @@ use App\Http\Controllers\Api\UserController;
 
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login']);
+Route::get('/logs', [LogController::class, 'index']);
+Route::get('/logs/search-ncs', [LogController::class, 'searchNcs']);
+
+Route::post('/logs', [LogController::class, 'store']);
+Route::post('/logs/bulk-import', [LogController::class, 'bulkImport']);
+Route::post('/logs/export', [LogController::class, 'export']);
+Route::post('/logs/delete-all', [LogController::class, 'deleteAll']);
+Route::delete('/logs/{log}', [LogController::class, 'destroy']);
+
+
+
 
 Route::get('/website-lock/status', [BackupController::class, 'checkWebsiteLock']);
 
@@ -26,16 +37,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/schedules', [ScheduleController::class, 'index']);
     Route::get('/schedules/{schedule}', [ScheduleController::class, 'show']);
 
-    Route::middleware('admin')->group(function () {
-        Route::get('/logs', [LogController::class, 'index']);
-        Route::post('/logs', [LogController::class, 'store']);
-        Route::post('/logs/bulk-import', [LogController::class, 'bulkImport']);
-        Route::post('/logs/export', [LogController::class, 'export']);
-        Route::post('/logs/delete-all', [LogController::class, 'deleteAll']);
-        Route::delete('/logs/{log}', [LogController::class, 'destroy']);
-    });
 
-    Route::get('/logs/search-ncs', [LogController::class, 'searchNcs']);
+
 
     Route::middleware('admin')->group(function () {
         Route::get('/users', [UserController::class, 'index']);

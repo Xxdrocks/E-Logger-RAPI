@@ -34,20 +34,17 @@ function LandingPage() {
             <section id="home" className="min-h-screen flex flex-col items-center justify-center px-6 py-20">
                 <div className="text-center max-w-4xl mx-auto">
                     <img
-                        src="/images/rumahrapi-logo.png"
+                        src="/images/logo-rapi.png"
                         alt="Rumah RAPI Logo"
-                        className="w-48 h-48 mx-auto mb-8 object-contain drop-shadow-2xl"
+                        className="w-100 mx-auto mb-8 object-contain drop-shadow-2xl"
                     />
-                    <h1 className="text-4xl md:text-6xl font-bold text-slate-900 mb-6">
-                        Rumah RAPI Indonesia
-                    </h1>
                     <p className="text-lg md:text-xl text-slate-600 mb-4 leading-relaxed">
-                        Organisasi Radio Amatir Pertama Indonesia
+                        Organisasi Radio Antar Penduduk Indonesia
                     </p>
                     <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 shadow-xl border border-slate-200 mt-12">
                         <h2 className="text-2xl font-bold text-slate-800 mb-4">Tentang RAPI</h2>
                         <p className="text-slate-700 leading-relaxed text-left">
-                            Radio Amatir Pertama Indonesia (RAPI) adalah organisasi yang menghimpun para penggemar
+                            Radio Antar Penduduk Indonesia (RAPI) adalah organisasi yang menghimpun para penggemar
                             dan praktisi radio amatir di Indonesia. Kami berkomitmen untuk mengembangkan teknologi
                             komunikasi radio, pendidikan, dan pelayanan masyarakat melalui kegiatan radio amatir.
                         </p>
@@ -92,12 +89,12 @@ function LandingPage() {
                     </p>
                     <div className="bg-white rounded-2xl shadow-2xl p-8 border border-slate-200">
                         <img
-                            src="/images/donasi.png"
+                            src="/images/contoh-donasi.png"
                             alt="Donasi RAPI"
                             className="w-full max-w-2xl mx-auto rounded-xl shadow-lg"
                         />
                         <p className="text-sm text-slate-500 mt-6">
-                            Scan QR Code atau transfer ke rekening yang tertera
+                           Rekap Donasi Rumah RAPI
                         </p>
                     </div>
                 </div>

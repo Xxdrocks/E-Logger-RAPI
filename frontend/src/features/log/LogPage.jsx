@@ -96,11 +96,11 @@ function LogPage() {
                             <p className="text-slate-600 mb-4">
                                 Logger tidak dapat diakses saat ini. Silakan hubungi admin.
                             </p>
-                            {remainingTime && (
+                            {/* {remainingTime && (
                                 <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">
                                     sampai {new Date(remainingTime).toLocaleString('id-ID')}
                                 </span>
-                            )}
+                            )} */}
                         </div>
                     </div>
                 ) : (

@@ -16,64 +16,124 @@ import SuperadminPanel from './superadmin/SuperadminPage';
 import LandingPage from './features/Landing/LandingPage';
  
 function App() {
-  return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
+    return (
+        <AuthProvider>
+            <BrowserRouter>
+                <Routes>
+                    {/* Public Routes */}
+                    <Route path="/" element={<Navigate to="/login" replace />} />
+                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/register" element={<RegisterPage />} />
+
+                    {/* Protected Dashboard Routes */}
+                    <Route 
+                        path="/dashboard/*" 
+                        element={
+                            <ProtectedRoute>
+                                <DashboardLayout />
+                            </ProtectedRoute>
+                        } 
+                    />
+                </Routes>
+            </BrowserRouter>
+        </AuthProvider>
+    );
+}
+
+function DashboardLayout() {
+    return (
+        <div className="min-h-screen flex flex-col">
+            <Navbar />
+            <main className="flex-1">
+                <Routes>
+                    <Route path="/" element={<Navigate to="/logger" replace />} />
+                    
+                    <Route path="/logger" element={<LogPage />} />
+                    <Route path="/schedule" element={<SchedulePage />} />
+                    <Route path="/points" element={<PointPage />} />
+
+                    <Route
+                        path="/operators"
+                        element={
+                            <ProtectedRoute adminOnly>
+                                <OperatorPage />
+                            </ProtectedRoute>
+                        }
+                    />
+
+                    <Route
+                        path="/superadmin"
+                        element={
+                            <ProtectedRoute superadminOnly>
+                                <SuperadminPanel />
+                            </ProtectedRoute>
+                        }
+                    />
+                </Routes>
+            </main>
+            <Footer />
+        </div>
+    );
+}
+//   return (
+   
+//     <AuthProvider>
+//       <BrowserRouter>
+//         <Routes>
           
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+//           <Route path="/" element={<LandingPage />} />
+//           <Route path="/login" element={<LoginPage />} />
+//           <Route path="/register" element={<RegisterPage />} />
  
       
-          <Route
-            path="/dashboard/*"
-            element={
-              <ProtectedRoute>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
-  );
-}
+//           <Route
+//             path="/dashboard/*"
+//             element={
+//               <ProtectedRoute>
+//                 <DashboardLayout />
+//               </ProtectedRoute>
+//             }
+//           />
+//         </Routes>
+//       </BrowserRouter>
+//     </AuthProvider>
+//   );
+// }
  
-function DashboardLayout() {
-  return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
-      <main className="flex-1">
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/logger" element={<LogPage />} />
-          <Route path="/schedule" element={<SchedulePage />} />
-          <Route path="/points" element={<PointPage />} />
+// function DashboardLayout() {
+//   return (
+//     <div className="min-h-screen flex flex-col">
+//       <Navbar />
+//       <main className="flex-1">
+//         <Routes>
+//           <Route path="/" element={<HomePage />} />
+//           <Route path="/logger" element={<LogPage />} />
+//           <Route path="/schedule" element={<SchedulePage />} />
+//           <Route path="/points" element={<PointPage />} />
           
-          <Route
-            path="/operators"
-            element={
-              <ProtectedRoute adminOnly>
-                <OperatorPage />
-              </ProtectedRoute>
-            }
-          />
+//           <Route
+//             path="/operators"
+//             element={
+//               <ProtectedRoute adminOnly>
+//                 <OperatorPage />
+//               </ProtectedRoute>
+//             }
+//           />
           
-          <Route
-            path="/superadmin"
-            element={
-              <ProtectedRoute superadminOnly>
-                <SuperadminPanel />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </main>
-      <Footer />
-    </div>
-  );
-}
+//           <Route
+//             path="/superadmin"
+//             element={
+//               <ProtectedRoute superadminOnly>
+//                 <SuperadminPanel />
+//               </ProtectedRoute>
+//             }
+//           />
+//         </Routes>
+//       </main>
+//       <Footer />
+//     </div>
+//   );
+// }
 
 
 
