@@ -51,14 +51,14 @@ function LoginPage() {
                                 onChange={(e) => setNcs(e.target.value.toUpperCase())}
                                 required
                                 className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary-light outline-none transition-all uppercase"
-                                placeholder="Contoh: JZ09VAG"
+                                placeholder="Masukan 10-28 Anda"
                                 autoFocus
                             />
                             <p className="text-xs text-slate-500 mt-1">Masukkan NCS terdaftar untuk login</p>
                         </div>
 
                         <button
-                            type="submit"
+                            type='disable'
                             disabled={loading}
                             className="w-full py-3 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50"
                         >
@@ -66,7 +66,7 @@ function LoginPage() {
                         </button>
                     </form>
 
-                    {/* <div className="mt-6 text-center">
+                   {/* <div className="mt-6 text-center">
                         <p className="text-sm text-slate-600">
                             NCS belum terdaftar?{' '}
                             <Link to="/register" className="text-primary font-semibold hover:text-primary-hover">

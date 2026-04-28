@@ -65,44 +65,49 @@ function Navbar() {
             </nav>
 
             {/* Mobile Navbar */}
-            <nav className="md:hidden fixed bottom-4 left-4 right-4 z-50">
-                <div className="bg-white/30 backdrop-blur-xl border border-white/40 rounded-3xl shadow-2xl shadow-primary/10 px-2 py-3">
-                    <div className="flex items-center justify-around gap-1">
-                        {navItems.map((item) => (
-                            <Link
-                                key={item.path}
-                                to={item.path}
-                                onClick={() => setActive(item.path)}
-                                className={`flex flex-col items-center gap-1 px-3 py-2 rounded-2xl transition-all duration-300 ${active === item.path
-                                        ? 'bg-white text-primary shadow-lg shadow-primary/20'
-                                        : 'text-slate-700'
+           <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50" style={{ paddingBottom: 'env(safe-area-inset-bottom, 16px)' }}>
+                <div className="px-4 pb-4">
+                    <div className="bg-white/30 backdrop-blur-xl border border-white/40 rounded-3xl shadow-2xl shadow-primary/10 px-2 py-3">
+                        <div className="flex items-center justify-around gap-1">
+                            {navItems.map((item) => (
+                                <Link
+                                    key={item.path}
+                                    to={item.path}
+                                    onClick={() => setActive(item.path)}
+                                    className={`flex flex-col items-center gap-1 px-3 py-2 rounded-2xl transition-all duration-300 ${
+                                        active === item.path
+                                            ? 'bg-white text-primary shadow-lg shadow-primary/20'
+                                            : 'text-slate-700'
                                     }`}
-                            >
-                                <img
-                                    src={item.image}
-                                    alt={item.name}
-                                    className={`w-6 h-6 object-contain transition-all duration-300 ${active === item.path ? 'scale-110' : 'opacity-70'
+                                >
+                                    <img
+                                        src={item.image}
+                                        alt={item.name}
+                                        className={`w-6 h-6 object-contain transition-all duration-300 ${
+                                            active === item.path ? 'scale-110' : 'opacity-70'
                                         }`}
-                                />
-                                <span className={`text-[10px] font-semibold transition-all duration-300 ${active === item.path ? 'text-primary' : 'text-slate-600'
+                                    />
+                                    <span className={`text-[10px] font-semibold transition-all duration-300 ${
+                                        active === item.path ? 'text-primary' : 'text-slate-600'
                                     }`}>
-                                    {item.name}
-                                </span>
-                            </Link>
-                        ))}
-
-                        {/* Logout Button untuk Mobile */}
-                        {user && (
-                            <button
-                                onClick={handleLogout}
-                                className="flex flex-col items-center gap-1 px-3 py-2 rounded-2xl text-red-600 hover:bg-red-50 transition-all"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4V7m-4 4V7" />
-                                </svg>
-                                <span className="text-[10px] font-semibold">Logout</span>
-                            </button>
-                        )}
+                                        {item.name}
+                                    </span>
+                                </Link>
+                            ))}
+ 
+                            {/* Logout Button untuk Mobile */}
+                            {user && (
+                                <button
+                                    onClick={handleLogout}
+                                    className="flex flex-col items-center gap-1 px-3 py-2 rounded-2xl text-red-600 hover:bg-red-50 transition-all"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m10 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h8a3 3 0 013 3v1" />
+                                    </svg>
+                                    <span className="text-[10px] font-semibold">Logout</span>
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
             </nav>

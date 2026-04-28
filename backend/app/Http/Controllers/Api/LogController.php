@@ -24,37 +24,42 @@ class LogController extends Controller
         $validated = $request->validate([
             'frequency' => 'required|string',
             'ncs_1028' => 'required|string',
-            'zzd' => 'nullable|string',
-            'nama' => 'nullable|string',
             'keterangan' => 'nullable|string',
-            'pencatat_ncs' => 'nullable|string',
+            'zzd' => 'nullable|string|max:2',
+            'pencatat_ncs' => 'required|string',
             'pencatat_nama' => 'nullable|string',
         ]);
 
         DB::beginTransaction();
 
         try {
+            $today = now()->toDateString();
 
-            $user = User::where('ncs', $validated['ncs_1028'])->first();
-            if (!$user) {
-                $validated['nama'] = null;
-            } else {
-                $validated['nama'] = $user->nama;
+            // ✅ DUPLICATE CHECK
+            $exists = Log::where('ncs_1028', $validated['ncs_1028'])
+                ->where('keterangan', $validated['keterangan'])
+                ->whereDate('created_at', $today)
+                ->exists();
+
+            if ($exists) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "NCS {$validated['ncs_1028']} sudah log hari ini"
+                ], 422);
             }
 
+            // ✅ AUTO GET USER
+            $user = User::where('ncs', $validated['ncs_1028'])->first();
+            $validated['nama'] = $user ? $user->nama : null;
+
+            // ✅ AUTO ZZD
+            $validated['zzd'] = $validated['zzd'] ?? substr($validated['ncs_1028'], 2, 2);
 
             $log = Log::create($validated);
 
-
             Approval::create([
                 'log_id' => $log->id,
-                'frequency' => $validated['frequency'],
-                'keterangan' => $validated['keterangan'],
-                'ncs_1028' => $validated['ncs_1028'],
-                'nama' => $validated['nama'],
-                'zzd' => $validated['zzd'],
-                'pencatat_ncs' => $validated['pencatat_ncs'],
-                'pencatat_nama' => $validated['pencatat_nama'],
+                ...$validated,
                 'status' => 'pending',
             ]);
 
@@ -62,12 +67,12 @@ class LogController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => 'Log berhasil disimpan. Menunggu approval admin.',
-                'log' => $log
+                'message' => 'Log berhasil disimpan & menunggu approval',
+                'data' => $log
             ], 201);
-
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menyimpan log',
@@ -75,7 +80,6 @@ class LogController extends Controller
             ], 500);
         }
     }
-
     public function destroy(Log $log)
     {
         $log->delete();
@@ -84,7 +88,7 @@ class LogController extends Controller
 
     public function deleteAll()
     {
-        Log::truncate();
+       Log::query()->delete();
         return response()->json(['message' => 'All logs deleted']);
     }
 
@@ -119,7 +123,7 @@ class LogController extends Controller
     public function bulkImport(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls,csv|max:5120',
+            'file' => 'required|file|mimes:xlsx,xls,csv',
             'frequency' => 'required|string',
             'keterangan' => 'nullable|string',
             'pencatat_ncs' => 'required|string',
@@ -129,51 +133,50 @@ class LogController extends Controller
         DB::beginTransaction();
 
         try {
-            $file = $request->file('file');
-            $data = Excel::toArray([], $file);
+            $rows = Excel::toArray([], $request->file('file'))[0];
 
-            if (empty($data) || empty($data[0])) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'File kosong atau format tidak valid',
-                ], 400);
-            }
-
-            $rows = $data[0];
             $imported = 0;
             $skipped = 0;
-            $errors = [];
+            $duplicates = 0;
+            $today = now()->toDateString();
 
-            foreach ($rows as $index => $row) {
+            foreach ($rows as $i => $row) {
+
                 if (empty($row[0])) {
                     $skipped++;
                     continue;
                 }
 
-                $ncs = trim(strtoupper($row[0]));
-                $user = User::where('ncs', $ncs)->first();
-                $nama = $user ? $user->nama : null;
-                $zzd = (strlen($ncs) >= 4) ? substr($ncs, 2, 2) : '';
+                $ncs = trim($row[0]);
 
-                $log = Log::create([
+                // ✅ DUPLICATE CHECK
+                $exists = Log::where('ncs_1028', $ncs)
+                    ->where('keterangan', $request->keterangan)
+                    ->whereDate('created_at', $today)
+                    ->exists();
+
+                if ($exists) {
+                    $duplicates++;
+                    continue;
+                }
+
+                $user = User::where('ncs', $ncs)->first();
+
+                $data = [
                     'frequency' => $request->frequency,
                     'keterangan' => $request->keterangan,
                     'ncs_1028' => $ncs,
-                    'nama' => $nama,
-                    'zzd' => $zzd,
+                    'nama' => $user ? $user->nama : null,
+                    'zzd' => substr($ncs, 2, 2),
                     'pencatat_ncs' => $request->pencatat_ncs,
                     'pencatat_nama' => $request->pencatat_nama,
-                ]);
+                ];
+
+                $log = Log::create($data);
 
                 Approval::create([
                     'log_id' => $log->id,
-                    'frequency' => $request->frequency,
-                    'keterangan' => $request->keterangan,
-                    'ncs_1028' => $ncs,
-                    'nama' => $nama,
-                    'zzd' => $zzd,
-                    'pencatat_ncs' => $request->pencatat_ncs,
-                    'pencatat_nama' => $request->pencatat_nama,
+                    ...$data,
                     'status' => 'pending',
                 ]);
 
@@ -184,18 +187,15 @@ class LogController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => "Import selesai: {$imported} berhasil, {$skipped} dilewati. Menunggu approval admin.",
-                'imported' => $imported,
-                'skipped' => $skipped,
-                'errors' => $errors,
+                'message' => "Import: {$imported} berhasil, {$duplicates} duplikat, {$skipped} kosong",
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat import',
-                'error' => $e->getMessage(),
+                'message' => 'Import gagal',
+                'error' => $e->getMessage()
             ], 500);
         }
     }

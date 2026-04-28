@@ -14,7 +14,7 @@ function SchedulePage() {
 
     const fetchSchedules = async () => {
         try {
-            const res = await axios.get('https://rumahrapi.com/backend/api/schedules');
+            const res = await axios.get('http://127.0.0.1:8000/api/schedules');
             setSchedules(res.data);
         } catch (error) {
             console.error('Error fetching schedules:', error);
@@ -41,7 +41,7 @@ function SchedulePage() {
         if (!confirm('Yakin ingin menghapus jadwal ini?')) return;
         
         try {
-            await axios.delete(`https://rumahrapi.com/backend/api/schedules/${id}`);
+            await axios.delete(`http://127.0.0.1:8000/api/schedules/${id}`);
             fetchSchedules();
         } catch (error) {
             console.error('Error deleting schedule:', error);

@@ -2,257 +2,257 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 
 function LogTable({ logs = [], refresh, session }) {
-    const [deletingId, setDeletingId] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
+    const [targetDeleteId, setTargetDeleteId] = useState(null);
     const [displayedLogs, setDisplayedLogs] = useState(logs);
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [deletingId, setDeletingId] = useState(null);
 
     useEffect(() => {
         setDisplayedLogs(logs);
     }, [logs]);
 
-    const handleDelete = async (id) => {
-        setDeletingId(id);
+    const confirmDelete = (id) => {
+        setTargetDeleteId(id);
+        setShowDeleteModal(true);
+    };
+
+    const handleDelete = async () => {
+        if (!targetDeleteId) return;
+        setIsProcessing(true);
+        setDeletingId(targetDeleteId);
         try {
-            await axios.delete(`https://rumahrapi.com/backend/api/logs/${id}`);
-            setDisplayedLogs(prev => prev.filter(log => log.id !== id));
-        } catch (error) {
-            console.error("Delete error:", error);
+            await axios.delete(`http://127.0.0.1:8000/api/logs/${targetDeleteId}`);
+            setDisplayedLogs(prev => prev.filter(log => log.id !== targetDeleteId));
+            showToast("Log berhasil dihapus", "success");
+        } catch {
+            showToast("Gagal menghapus log", "error");
         } finally {
+            setIsProcessing(false);
+            setShowDeleteModal(false);
+            setTargetDeleteId(null);
             setDeletingId(null);
         }
     };
 
     const handleDeleteAll = async () => {
-        setDisplayedLogs([]);
-        setShowDeleteAllModal(false);
+        setIsProcessing(true);
+        try {
+            await axios.post('http://127.0.0.1:8000/api/logs/delete-all');
+            setDisplayedLogs([]);
+            if (refresh) await refresh();
+            showToast("Semua log berhasil dihapus", "success");
+        } catch {
+            showToast("Gagal menghapus semua log", "error");
+        } finally {
+            setIsProcessing(false);
+            setShowDeleteAllModal(false);
+        }
+    };
+
+    const showToast = (message, type = "success") => {
+        const toast = document.createElement("div");
+        toast.className = `fixed top-6 left-1/2 -translate-x-1/2 z-[999] px-5 py-2.5 rounded-xl shadow-lg text-white text-sm font-semibold ${
+            type === "error" ? "bg-red-500" : "bg-emerald-500"
+        }`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = "0";
+            setTimeout(() => document.body.removeChild(toast), 400);
+        }, 2500);
     };
 
     const handleExport = async () => {
-        const ket = session?.keterangan || 'semua_data';
-        const pencatatNcs = session?.pencatat_ncs || '';
-        const token = localStorage.getItem('token');
-
+        const ket = session?.keterangan || "semua_data";
+        const pencatatNcs = session?.pencatat_ncs || "";
+        const token = localStorage.getItem("token");
         const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
-        const fileName = `${year}-${month}-${day}-${pencatatNcs}-${ket}.xlsx`;
-
+        const fileName = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}-${pencatatNcs}-${ket}.xlsx`;
         try {
-            const response = await axios.post('https://rumahrapi.com/backend/api/logs/export', {
+            const response = await axios.post("http://127.0.0.1:8000/api/logs/export", {
                 keterangan: ket,
                 frequency: session?.frequency,
                 pencatat_ncs: pencatatNcs,
-                displayed_logs: displayedLogs 
+                displayed_logs: displayedLogs,
             }, {
-                headers: { 
-                    Authorization: `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                responseType: 'blob'
+                headers: { Authorization: `Bearer ${token}` },
+                responseType: "blob",
             });
-
             const url = window.URL.createObjectURL(new Blob([response.data]));
-            const link = document.createElement('a');
+            const link = document.createElement("a");
             link.href = url;
             link.download = fileName;
-
             document.body.appendChild(link);
             link.click();
-
-            setTimeout(() => {
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(url);
-            }, 100);
-        } catch (error) {
-            console.error('Export error:', error);
-            alert('Gagal export file');
+            setTimeout(() => { document.body.removeChild(link); window.URL.revokeObjectURL(url); }, 100);
+        } catch {
+            showToast("Gagal export file", "error");
         }
     };
+
+    const getInitials = (name = "") =>
+        name.trim().split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
 
     const columns = ["Freq", "10/28", "Waktu", "Nama", "ZZD", "Aksi"];
 
     return (
-        <div className="bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-xl shadow-slate-200/60 overflow-hidden">
-            {showDeleteAllModal && (
-                <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[200] flex items-center justify-center p-6">
-                    <div className="bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-                                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                </svg>
-                            </div>
-                            <div>
-                                <h3 className="text-lg font-bold text-slate-900">Hapus Tampilan</h3>
-                                <p className="text-sm text-slate-500 mt-0.5">Clear tabel (data tetap di database)</p>
-                            </div>
+        <div className="bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-xl overflow-hidden">
+
+            {/* Delete Single Modal */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
+                    <div className="bg-white rounded-2xl p-6 w-full max-w-xs border border-slate-100 shadow-md">
+                        <div className="w-9 h-9 rounded-xl bg-red-50 flex items-center justify-center mb-4">
+                            <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
                         </div>
-
-                        <p className="text-sm text-slate-600 mb-6">
-                            Apakah Anda yakin ingin menghapus <strong>{displayedLogs.length} log dari tampilan</strong>?
-                            Data tetap tersimpan di database dan bisa di-export.
+                        <h3 className="text-sm font-semibold text-slate-800 mb-1">Hapus log ini?</h3>
+                        <p className="text-xs text-slate-400 mb-5 leading-relaxed">
+                            Data yang dihapus tidak dapat dipulihkan kembali.
                         </p>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setShowDeleteModal(false)}
+                                className="flex-1 px-3 py-2 rounded-xl bg-slate-100 text-slate-600 text-xs font-medium hover:bg-slate-200 transition-colors"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                disabled={isProcessing}
+                                className="flex-1 px-3 py-2 rounded-xl bg-red-500 text-white text-xs font-medium hover:bg-red-600 transition-colors disabled:opacity-60"
+                            >
+                                {isProcessing ? "Menghapus..." : "Hapus"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
-                        <div className="flex items-center gap-3 justify-end">
+            {/* Clear All Modal */}
+            {showDeleteAllModal && (
+                <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
+                    <div className="bg-white rounded-2xl p-6 w-full max-w-xs border border-slate-100 shadow-md">
+                        <div className="w-9 h-9 rounded-xl bg-orange-50 flex items-center justify-center mb-4">
+                            <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M10 6V4h4v2M5 6l1 14a2 2 0 002 2h8a2 2 0 002-2l1-14" />
+                            </svg>
+                        </div>
+                        <h3 className="text-sm font-semibold text-slate-800 mb-4">Hapus semua log?</h3>
+                        <div className="flex gap-2">
                             <button
                                 onClick={() => setShowDeleteAllModal(false)}
-                                className="px-5 py-2.5 rounded-xl bg-slate-100 text-slate-600 text-sm font-semibold hover:bg-slate-200 transition-all"
+                                className="flex-1 px-3 py-2 rounded-xl bg-slate-100 text-slate-600 text-xs font-medium hover:bg-slate-200 transition-colors"
                             >
                                 Batal
                             </button>
                             <button
                                 onClick={handleDeleteAll}
-                                className="px-5 py-2.5 rounded-xl bg-orange-600 text-white text-sm font-semibold hover:bg-orange-700 shadow-md hover:shadow-lg transition-all"
+                                disabled={isProcessing}
+                                className="flex-1 px-3 py-2 rounded-xl bg-red-500 text-white text-xs font-medium hover:bg-red-600 transition-colors disabled:opacity-60"
                             >
-                                Ya, Clear Tampilan
+                                {isProcessing ? "Memproses..." : "Hapus"}
                             </button>
                         </div>
                     </div>
                 </div>
             )}
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-7 py-5 border-b border-slate-100">
-                <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-md shadow-primary/30">
-                        <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                        </svg>
-                    </div>
-                    <div>
-                        <h2 className="text-base font-bold text-slate-800">Riwayat Log</h2>
-                        <p className="text-xs text-slate-400 mt-0.5">{displayedLogs.length} entri ditampilkan</p>
-                    </div>
+            {/* Header */}
+            <div className="flex justify-between items-center px-6 py-4 border-b border-slate-100">
+                <div>
+                    <h2 className="text-sm font-semibold text-slate-800">Riwayat Log</h2>
+                    <p className="text-xs text-slate-400 mt-0.5">{displayedLogs.length} entri tercatat</p>
                 </div>
-
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2">
                     <button
                         onClick={() => setShowDeleteAllModal(true)}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-100 hover:border-orange-300 text-sm font-semibold transition-all duration-200"
+                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-red-500 text-white text-xs font-medium hover:bg-red-600 transition-colors"
                     >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M10 6V4h4v2M5 6l1 14a2 2 0 002 2h8a2 2 0 002-2l1-14" />
                         </svg>
-                        Clear Tampilan
+                        Clear
                     </button>
-
                     <button
                         onClick={handleExport}
-                        className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-light text-primary border border-primary text-sm font-semibold hover:bg-primary hover:text-white transition-all duration-200"
+                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-primary text-white text-xs font-medium hover:opacity-90 transition-opacity"
                     >
-                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3" />
                         </svg>
-                        Export Excel
+                        Export
                     </button>
                 </div>
             </div>
 
+            {/* Table */}
             <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                    <thead>
-                        <tr className="bg-slate-50/80 border-b border-slate-100">
-                            {columns.map((col, i) => (
-                                <th key={i} className="px-5 py-3.5 text-left text-xs font-bold text-slate-500 uppercase tracking-widest whitespace-nowrap">
-                                    {col}
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-50">
-                        {displayedLogs.length === 0 ? (
-                            <tr>
-                                <td colSpan={7} className="py-16 text-center">
-                                    <div className="flex flex-col items-center gap-3 text-slate-400">
-                                        <div className="w-14 h-14 rounded-2xl bg-slate-100 flex items-center justify-center">
-                                            <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                            </svg>
-                                        </div>
-                                        <div>
-                                            <p className="font-semibold text-slate-500 text-sm">Tidak ada data ditampilkan</p>
-                                            <p className="text-xs text-slate-400 mt-0.5">Refresh halaman untuk reload data</p>
-                                        </div>
-                                    </div>
-                                </td>
+                {displayedLogs.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-16 gap-2">
+                        <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center">
+                            <svg className="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 9.776c.112-.017.227-.026.344-.026h15.812c.117 0 .232.009.344.026m-16.5 0a2.25 2.25 0 00-1.883 2.542l.857 6a2.25 2.25 0 002.227 1.932H19.05a2.25 2.25 0 002.227-1.932l.857-6a2.25 2.25 0 00-1.883-2.542m-16.5 0V6A2.25 2.25 0 016 3.75h3.879a1.5 1.5 0 011.06.44l2.122 2.12a1.5 1.5 0 001.06.44H18A2.25 2.25 0 0120.25 9v.776" />
+                            </svg>
+                        </div>
+                        <p className="text-sm text-slate-400">Belum ada log tercatat</p>
+                    </div>
+                ) : (
+                    <table className="w-full text-sm">
+                        <thead>
+                            <tr className="border-b border-slate-100 bg-slate-50/50">
+                                {columns.map((col, i) => (
+                                    <th key={i} className="px-5 py-3 text-left text-[11px] font-semibold text-slate-400 uppercase tracking-wide">
+                                        {col}
+                                    </th>
+                                ))}
                             </tr>
-                        ) : (
-                            displayedLogs.map((log) => (
-                                <tr key={log.id} className="group hover:bg-primary-light/40 transition-colors duration-150">
+                        </thead>
+                        <tbody className="divide-y divide-slate-50">
+                            {displayedLogs.map(log => (
+                                <tr
+                                    key={log.id}
+                                    className={`group hover:bg-slate-50/60 transition-colors ${
+                                        deletingId === log.id ? "opacity-40 pointer-events-none" : ""
+                                    }`}
+                                >
                                     <td className="px-5 py-3.5">
-                                        <span className="inline-flex items-center gap-1.5 font-mono font-semibold text-primary px-2.5 py-0.5 rounded-lg text-xs">
-                                           {log.frequency ?? "-"}
+                                        <span className="inline-block px-2 py-0.5 rounded-md bg-indigo-50 text-xs font-mono font-medium">
+                                            {log.frequency}
                                         </span>
                                     </td>
-                                    <td className="px-5 py-3.5">
-                                        <span className="font-mono text-slate-700 text-xs font-medium bg-slate-100 px-2.5 py-0.5 rounded-lg">
-                                            {log.ncs_1028 ?? "-"}
-                                        </span>
+                                    <td className="px-5 py-3.5 font-mono text-xs text-slate-600">
+                                        {log.ncs_1028}
                                     </td>
-                                    <td className="px-5 py-3.5 text-slate-600 text-xs font-medium">
-                                        {log.created_at
-                                            ? new Date(log.created_at).toLocaleTimeString("id-ID", {
-                                                hour: "2-digit",
-                                                minute: "2-digit"
-                                            })
-                                            : "-"
-                                        }
+                                    <td className="px-5 py-3.5 text-xs text-slate-400 font-mono">
+                                        {new Date(log.created_at).toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" })}
                                     </td>
-                                   
                                     <td className="px-5 py-3.5">
-                                        <div className="flex items-center gap-2">
-                                            {log.nama ? (
-                                                <>
-                                                    <span className="text-slate-700 font-semibold text-xs">{log.nama}</span>
-                                                </>
-                                            ) : (
-                                                <span className="text-red-500 italic text-xs">Belum terdaftar</span>
-                                            )}
+                                        <div className="flex items-center gap-2.5">
+                                            
+                                            <span className="text-sm text-slate-700">{log.nama}</span>
                                         </div>
                                     </td>
-                                    <td className="px-5 py-3.5">
-                                        <span className="font-mono text-amber-700 bg-amber-50 border border-amber-100 px-2.5 py-0.5 rounded-lg text-xs font-medium">
-                                            {log.zzd ?? "-"}
-                                        </span>
+                                    <td className="px-5 py-3.5 font-mono text-xs font-medium text-slate-700">
+                                        {log.zzd}
                                     </td>
                                     <td className="px-5 py-3.5">
                                         <button
-                                            onClick={() => handleDelete(log.id)}
-                                            disabled={deletingId === log.id}
-                                            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-red-50 text-red-500 border border-red-100 text-xs font-semibold hover:bg-red-100 hover:border-red-300 hover:text-red-700 transition-all duration-150 disabled:opacity-50"
+                                            onClick={() => confirmDelete(log.id)}
+                                            className="px-3 py-1.5 rounded-lg border border-red-100 text-red-400 text-xs font-medium hover:bg-red-50 hover:border-red-200 hover:text-red-500 transition-colors"
                                         >
-                                            {deletingId === log.id ? (
-                                                <svg className="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
-                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                                                </svg>
-                                            ) : (
-                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
-                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                </svg>
-                                            )}
                                             Hapus
                                         </button>
                                     </td>
                                 </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                            ))}
+                        </tbody>
+                    </table>
+                )}
             </div>
-
-            {displayedLogs.length > 0 && (
-                <div className="px-7 py-3.5 bg-slate-50/60 border-t border-slate-100 flex items-center justify-between">
-                    <p className="text-xs text-slate-400">
-                        Menampilkan <span className="font-semibold text-slate-600">{displayedLogs.length}</span> entri
-                    </p>
-                    <div className="flex gap-1">
-                        {[...Array(Math.min(3, Math.ceil(displayedLogs.length / 10)))].map((_, i) => (
-                            <div key={i} className={`w-1.5 h-1.5 rounded-full ${i === 0 ? "bg-primary" : "bg-slate-300"}`} />
-                        ))}
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
