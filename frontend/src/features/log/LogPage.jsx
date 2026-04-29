@@ -8,13 +8,46 @@ function LogPage() {
     const { user, isSuperadmin } = useAuth();
     const [logs, setLogs] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [session, setSession] = useState(null);
+    const [session, setSession,] = useState(null);
+    const [sessionDraft, setSessionDraft] = useState({
+        frequency: '',
+        keterangan: '',
+        pencatat_ncs: '',
+        pencatat_nama: '',
+        sessionId: null
+    });
     const [websiteLocked, setWebsiteLocked] = useState(false);
     const [remainingTime, setRemainingTime] = useState(null);
 
+    useEffect(() => {
+        const saved = localStorage.getItem("active_session");
+
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+
+                if (parsed?.sessionId) {
+                    setSession(null);         
+                    // setSessionDraft(parsed);  
+                }
+            } catch {
+                localStorage.removeItem("active_session");
+            }
+        }
+    }, []);
+    
     const fetchLogs = async () => {
+        if (!session?.sessionId) return;
+
+        setLoading(true);
+
         try {
-            const res = await axios.get("https://rumahrapi.com/backend/api/logs");
+            const res = await axios.get("https://rumahrapi.com/backend/api/logs", {
+                params: { session_id: session.sessionId }
+            });
+
+            console.log("API RESULT:", res.data); // debug
+
             setLogs(res.data.data || []);
         } catch (error) {
             console.error("Gagal fetch logs:", error);
@@ -35,12 +68,29 @@ function LogPage() {
     };
 
     useEffect(() => {
-        fetchLogs();
-        checkWebsiteLock();
+        if (!session?.sessionId) return;
 
+        fetchLogs();
+    }, [session]);
+
+    useEffect(() => {
+        console.log("SESSION RESTORED:", session);
+    }, [session]);
+
+    useEffect(() => {
+        checkWebsiteLock();
         const interval = setInterval(checkWebsiteLock, 30000);
         return () => clearInterval(interval);
     }, []);
+
+    const handleSetSession = (newSession) => {
+        if (newSession) {
+            localStorage.setItem("active_session", JSON.stringify(newSession));
+        } else {
+            localStorage.removeItem("active_session");
+        }
+        setSession(newSession);
+    };
 
     const now = new Date();
     const dateStr = now.toLocaleDateString("id-ID", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
@@ -69,7 +119,6 @@ function LogPage() {
                         <div className="flex items-center gap-3 md:gap-4">
                             <img src="/images/logo-rapi.png" alt="Logo" className="w-16 md:w-20" />
                         </div>
-
                         <div className="flex flex-col items-start md:items-end gap-1.5">
                             <div className="flex items-center gap-2 bg-white/80 border border-primary/30 rounded-xl px-3 md:px-4 py-2 shadow-sm backdrop-blur-sm">
                                 <div className={`w-2 h-2 rounded-full ${isLockedForUser ? 'bg-red-500' : 'bg-green-500'} animate-pulse shadow-md shadow-primary/30`} />
@@ -93,20 +142,19 @@ function LogPage() {
                         </div>
                         <div className="text-center">
                             <h2 className="text-2xl font-bold text-slate-900 mb-2">Website Sedang Terkunci</h2>
-                            <p className="text-slate-600 mb-4">
-                                Logger tidak dapat diakses saat ini. Silakan hubungi admin.
-                            </p>
-                            {/* {remainingTime && (
-                                <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full">
-                                    sampai {new Date(remainingTime).toLocaleString('id-ID')}
-                                </span>
-                            )} */}
+                            <p className="text-slate-600 mb-4">Logger tidak dapat diakses saat ini. Silakan hubungi admin.</p>
                         </div>
                     </div>
                 ) : (
                     <>
                         <section className="mb-4 md:mb-6 z-[99] relative">
-                            <LogForm refresh={fetchLogs} session={session} setSession={setSession} />
+                            <LogForm
+                                refresh={fetchLogs}
+                                session={session}
+                                setSession={handleSetSession}
+                                sessionDraft={sessionDraft}
+                                setSessionDraft={setSessionDraft}
+                            />
                         </section>
 
                         <section>
@@ -116,7 +164,7 @@ function LogPage() {
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                                     </svg>
-                                    <p className="text-sm text-slate-500 font-medium">Memuat data log...</p>
+                                    <p className="text-sm text-slate-500 font-medium">Mulai sesi untuk memuat data Log...</p>
                                 </div>
                             ) : (
                                 <LogTable logs={logs} refresh={fetchLogs} session={session} />

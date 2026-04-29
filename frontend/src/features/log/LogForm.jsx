@@ -1,13 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-function LogForm({ refresh, session, setSession }) {
-    const [sessionDraft, setSessionDraft] = useState({ 
-        frequency: '', 
-        keterangan: '', 
-        pencatat_ncs: '', 
-        pencatat_nama: '' 
-    });
+function LogForm({ refresh, session, setSession, sessionDraft, setSessionDraft }) {
     const [ncs, setNcs] = useState('');
     const [suggestions, setSuggestions] = useState([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
@@ -16,7 +10,7 @@ function LogForm({ refresh, session, setSession }) {
     const [success, setSuccess] = useState(false);
     const [editSession, setEditSession] = useState(false);
     const [toast, setToast] = useState(null);
-    
+
     const [pencatatSuggestions, setPencatatSuggestions] = useState([]);
     const [showPencatatSuggestions, setShowPencatatSuggestions] = useState(false);
     const [notes, setNotes] = useState('');
@@ -34,6 +28,7 @@ function LogForm({ refresh, session, setSession }) {
         setToast({ message, type });
         setTimeout(() => setToast(null), 3000);
     };
+
 
     useEffect(() => {
         const handleClickOutside = (e) => {
@@ -78,9 +73,31 @@ function LogForm({ refresh, session, setSession }) {
     const handleStartSession = (e) => {
         e.preventDefault();
         if (!sessionDraft.frequency || !sessionDraft.pencatat_ncs) return;
-        setSession({ ...sessionDraft });
+
+        const sessionId = `${sessionDraft.pencatat_ncs}-${Date.now()}-${sessionDraft.keterangan || 'session'}`;
+
+        const newSession = {
+            ...sessionDraft,
+            sessionId
+        };
+
+        setSession(newSession);
+        localStorage.setItem('active_session', JSON.stringify(newSession));
+
         setEditSession(false);
         setNotes('');
+
+        showToast('✓ Sesi berhasil dimulai!', 'success');
+    };
+
+    const handleEndSession = () => {
+        localStorage.removeItem('active_session');
+        setSession(null);
+        setSessionDraft({ frequency: '', keterangan: '', pencatat_ncs: '', pencatat_nama: '', sessionId: null });
+        setNcs('');
+        setSelectedOperator(null);
+        setNotes('');
+        showToast('Sesi telah diakhiri', 'success');
     };
 
     const handleNcsChange = async (e) => {
@@ -105,15 +122,15 @@ function LogForm({ refresh, session, setSession }) {
     const handleNcsKeyDown = async (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
-            
+
             if (!ncs) return;
 
             try {
                 const res = await axios.get(`https://rumahrapi.com/backend/api/logs/search-ncs?q=${ncs}`);
-                
+
                 const exactMatch = res.data.find(op => op.ncs.toLowerCase() === ncs.toLowerCase());
                 const partialMatch = res.data.find(op => op.ncs.toLowerCase().includes(ncs.toLowerCase()));
-                
+
                 if (exactMatch) {
                     handleSelectSuggestion(exactMatch);
                 } else if (partialMatch) {
@@ -134,6 +151,7 @@ function LogForm({ refresh, session, setSession }) {
         setShowSuggestions(false);
     };
 
+    // ✅ SAVE LOG WITH SESSION_ID
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!session || !ncs) return;
@@ -147,6 +165,7 @@ function LogForm({ refresh, session, setSession }) {
                 zzd: extractZzd(ncs),
                 pencatat_ncs: session.pencatat_ncs,
                 pencatat_nama: session.pencatat_nama,
+                session_id: session.sessionId  // ← SEND SESSION_ID
             });
             setNcs('');
             setSelectedOperator(null);
@@ -181,6 +200,7 @@ function LogForm({ refresh, session, setSession }) {
         }
     };
 
+    // ✅ BULK IMPORT WITH SESSION_ID
     const handleBulkImport = async () => {
         if (!bulkFile || !session) {
             showToast('Pilih file dan pastikan sesi aktif', 'error');
@@ -197,6 +217,7 @@ function LogForm({ refresh, session, setSession }) {
             formData.append('keterangan', session.keterangan || '');
             formData.append('pencatat_ncs', session.pencatat_ncs);
             formData.append('pencatat_nama', session.pencatat_nama || '');
+            formData.append('session_id', session.sessionId); // ← SEND SESSION_ID
 
             const res = await axios.post('https://rumahrapi.com/backend/api/logs/bulk-import', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
@@ -222,13 +243,13 @@ function LogForm({ refresh, session, setSession }) {
         if (e.key === 'Enter') {
             const cursorPos = e.target.selectionStart;
             const currentLine = notes.substring(0, cursorPos).split('\n').pop();
-            
+
             if (currentLine.trim().startsWith('-')) {
                 e.preventDefault();
                 const beforeCursor = notes.substring(0, cursorPos);
                 const afterCursor = notes.substring(cursorPos);
                 setNotes(beforeCursor + '\n- ' + afterCursor);
-                
+
                 setTimeout(() => {
                     e.target.selectionStart = e.target.selectionEnd = cursorPos + 3;
                 }, 0);
@@ -239,9 +260,8 @@ function LogForm({ refresh, session, setSession }) {
     return (
         <div className="bg-white/75 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-xl">
             {toast && (
-                <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[999] px-5 py-2.5 rounded-full shadow-lg text-white text-sm font-semibold ${
-                    toast.type === 'error' ? 'bg-red-500' : 'bg-primary'
-                }`}>
+                <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[999] px-5 py-2.5 rounded-full shadow-lg text-white text-sm font-semibold ${toast.type === 'error' ? 'bg-red-500' : 'bg-primary'
+                    }`}>
                     {toast.message}
                 </div>
             )}
@@ -256,14 +276,16 @@ function LogForm({ refresh, session, setSession }) {
                             </svg>
                         </div>
                         <div>
-                            <h2 className="text-base font-bold text-slate-900">{editSession ? 'Ganti Sesi' : 'Sesi Aktif'}</h2>
+                            <h2 className="text-base font-bold text-slate-900">{editSession ? 'Ganti Sesi' : 'Mulai Sesi Baru'}</h2>
                             <p className="text-xs text-slate-500 mt-0.5">
-                                {editSession ? 'Ubah konfigurasi sesi' : 'Atur frequency dan keterangan'}
+                                {editSession ? 'Ubah konfigurasi sesi' : 'Setiap sesi memiliki data log terpisah'}
                             </p>
                         </div>
                     </div>
 
+                    {/* REST OF FORM - SAME AS BEFORE */}
                     <form onSubmit={handleStartSession} className="space-y-4">
+                        {/* ... (frequency, keterangan, pencatat_ncs dropdowns same as original) ... */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="dropdown-container">
                                 <label className="block text-xs font-bold text-slate-600 mb-2">Frequency</label>
@@ -299,7 +321,7 @@ function LogForm({ refresh, session, setSession }) {
                             </div>
 
                             <div className="dropdown-container">
-                                <label className="block text-xs font-bold text-slate-600 mb-2"> Kegaiatan </label>
+                                <label className="block text-xs font-bold text-slate-600 mb-2">Kegiatan</label>
                                 <div className="relative">
                                     <input
                                         placeholder="Pilih kegiatan..."
@@ -361,7 +383,7 @@ function LogForm({ refresh, session, setSession }) {
                             </div>
 
                             <div>
-                                <label className="block text-xs font-bold text-slate-600 mb-2"> Operator </label>
+                                <label className="block text-xs font-bold text-slate-600 mb-2">Operator</label>
                                 <input
                                     value={sessionDraft.pencatat_nama}
                                     readOnly
@@ -394,6 +416,7 @@ function LogForm({ refresh, session, setSession }) {
 
             {session && !editSession && (
                 <>
+                    {/* Active Session Header with Session ID Display */}
                     <div className="px-5 md:px-7 py-4 bg-gradient-to-r from-primary/10 to-secondary/10 border-b border-slate-200/50">
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                             <div className="flex flex-wrap items-center gap-2">
@@ -427,13 +450,14 @@ function LogForm({ refresh, session, setSession }) {
                         </div>
                     </div>
 
+                    {/* REST OF COMPONENT - Notes + Input NCS + Submit - SAME AS ORIGINAL */}
                     <div className="p-5 md:p-7 space-y-6">
                         <div className="space-y-3">
                             <label className="flex items-center gap-2 text-sm font-bold text-slate-700">
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
-                                Catatan NCS 
+                                Catatan NCS
                             </label>
                             <textarea
                                 value={notes}
@@ -525,31 +549,32 @@ function LogForm({ refresh, session, setSession }) {
                                     )}
                                 </button>
                             </div>
-                             <div className="space-y-3">
-                            <label className="flex items-center gap-2 text-sm font-bold text-slate-700">
-                                <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                                </svg>
-                                Import Excel
-                            </label>
-    
-                            <input
-                                type="file"
-                                accept=".xlsx,.xls,.csv"
-                                onChange={handleBulkFileChange}
-                                className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary file:text-white file:font-semibold hover:file:bg-primary-dark"
-                            />
-                            {bulkFile && (
-                                <p className="text-xs text-slate-600">📄 {bulkFile.name}</p>
-                            )}
-                            <button
-                                onClick={handleBulkImport}
-                                disabled={!bulkFile || bulkImporting}
-                                className="w-full px-4 py-2.5 rounded-xl bg-primary text-white font-semibold hover:bg-hover disabled:opacity-50 transition-all"
-                            >
-                                {bulkImporting ? 'Importing...' : 'Import Sekarang'}
-                            </button>
-                        </div>  
+                            <div className="space-y-3">
+                                <label className="flex items-center gap-2 text-sm font-bold text-slate-700">
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                                    </svg>
+                                    Import Excel
+                                </label>
+
+                                <input
+                                    type="file"
+                                    accept=".xlsx,.xls,.csv"
+                                    onChange={handleBulkFileChange}
+                                    className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary file:text-white file:font-semibold hover:file:bg-primary-dark"
+                                />
+                                {bulkFile && (
+                                    <p className="text-xs text-slate-600">📄 {bulkFile.name}</p>
+                                )}
+                                <button
+                                    onClick={handleBulkImport}
+                                    type="button"
+                                    disabled={!bulkFile || bulkImporting}
+                                    className="w-full px-4 py-2.5 rounded-xl bg-primary text-white font-semibold hover:bg-hover disabled:opacity-50 transition-all"
+                                >
+                                    {bulkImporting ? 'Importing...' : 'Import Sekarang'}
+                                </button>
+                            </div>
                         </form>
                     </div>
                 </>
@@ -558,4 +583,4 @@ function LogForm({ refresh, session, setSession }) {
     );
 }
 
-export default LogForm; 
+export default LogForm;

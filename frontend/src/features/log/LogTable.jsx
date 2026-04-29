@@ -9,12 +9,12 @@ function LogTable({ logs = [], refresh, session }) {
     const [isProcessing, setIsProcessing] = useState(false);
     const [deletingId, setDeletingId] = useState(null);
 
-   useEffect(() => {
-    const sorted = [...logs].sort((a, b) => {
-        return new Date(a.created_at) - new Date(b.created_at);
-    });
-    setDisplayedLogs(sorted);
-}, [logs]);
+    useEffect(() => {
+        const sorted = [...logs].sort((a, b) => {
+            return new Date(a.created_at) - new Date(b.created_at);
+        });
+        setDisplayedLogs(sorted);
+    }, [logs]);
 
     const confirmDelete = (id) => {
         setTargetDeleteId(id);
@@ -56,9 +56,8 @@ function LogTable({ logs = [], refresh, session }) {
 
     const showToast = (message, type = "success") => {
         const toast = document.createElement("div");
-        toast.className = `fixed top-6 left-1/2 -translate-x-1/2 z-[999] px-5 py-2.5 rounded-xl shadow-lg text-white text-sm font-semibold ${
-            type === "error" ? "bg-red-500" : "bg-emerald-500"
-        }`;
+        toast.className = `fixed top-6 left-1/2 -translate-x-1/2 z-[999] px-5 py-2.5 rounded-xl shadow-lg text-white text-sm font-semibold ${type === "error" ? "bg-red-500" : "bg-emerald-500"
+            }`;
         toast.textContent = message;
         document.body.appendChild(toast);
         setTimeout(() => {
@@ -75,10 +74,10 @@ function LogTable({ logs = [], refresh, session }) {
         const fileName = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}-${pencatatNcs}-${ket}.xlsx`;
         try {
             const response = await axios.post("https://rumahrapi.com/backend/api/logs/export", {
+                session_id : session?.sessionId,
                 keterangan: ket,
                 frequency: session?.frequency,
                 pencatat_ncs: pencatatNcs,
-                displayed_logs: displayedLogs,
             }, {
                 headers: { Authorization: `Bearer ${token}` },
                 responseType: "blob",
@@ -218,9 +217,8 @@ function LogTable({ logs = [], refresh, session }) {
                             {displayedLogs.map(log => (
                                 <tr
                                     key={log.id}
-                                    className={`group hover:bg-slate-50/60 transition-colors ${
-                                        deletingId === log.id ? "opacity-40 pointer-events-none" : ""
-                                    }`}
+                                    className={`group hover:bg-slate-50/60 transition-colors ${deletingId === log.id ? "opacity-40 pointer-events-none" : ""
+                                        }`}
                                 >
                                     <td className="px-5 py-3.5">
                                         <span className="inline-block px-2 py-0.5 rounded-md bg-indigo-50 text-xs font-mono font-medium">
@@ -235,7 +233,7 @@ function LogTable({ logs = [], refresh, session }) {
                                     </td>
                                     <td className="px-5 py-3.5">
                                         <div className="flex items-center gap-2.5">
-                                            
+
                                             <span className="text-sm text-slate-700">{log.nama}</span>
                                         </div>
                                     </td>

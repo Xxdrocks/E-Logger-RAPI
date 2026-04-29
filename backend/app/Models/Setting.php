@@ -39,14 +39,12 @@ class Setting extends Model
             return false;
         }
 
-        // Check if there's a timer
         $lockedUntil = static::get('locked_until');
 
         if ($lockedUntil) {
             $unlockTime = \Carbon\Carbon::parse($lockedUntil);
 
             if (now()->greaterThan($unlockTime)) {
-                // Timer expired, unlock automatically
                 static::set('website_locked', 'false');
                 static::set('locked_until', null);
                 return false;

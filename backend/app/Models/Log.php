@@ -16,6 +16,7 @@ class Log extends Model
         'keterangan',
         'pencatat_ncs',
         'pencatat_nama',
+        'session_id',
     ];
 
     protected function casts(): array

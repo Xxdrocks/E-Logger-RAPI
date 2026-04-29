@@ -14,23 +14,22 @@ use PhpOffice\PhpSpreadsheet\Style\Alignment;
 class LogsExport implements FromCollection, WithHeadings, WithMapping, WithStyles
 {
     protected $keterangan;
-    protected $displayedLogs; 
+    protected $sessionId;
 
-    public function __construct($keterangan = null, $displayedLogs = null)
+    public function __construct($keterangan = null, $sessionId = null)
     {
         $this->keterangan = $keterangan;
-        $this->displayedLogs = $displayedLogs;
+        $this->sessionId = $sessionId;
     }
 
     public function collection()
     {
 
-        if ($this->displayedLogs !== null && is_array($this->displayedLogs)) {
-            $logIds = array_column($this->displayedLogs, 'id');
-            return Log::whereIn('id', $logIds)->orderBy('created_at')->get();
-        }
-
         $query = Log::orderBy('created_at');
+
+        if ($this->sessionId) {
+            $query->where('session_id', $this->sessionId);
+        }
 
         if ($this->keterangan && $this->keterangan !== 'semua_data') {
             $query->where('keterangan', $this->keterangan);

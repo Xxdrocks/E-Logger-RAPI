@@ -13,21 +13,29 @@ use Illuminate\Support\Facades\DB;
 
 class LogController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $logs = Log::latest()->get();
-        return response()->json(['data' => $logs]);
+        $sessionId = $request->input('session_id');
+
+        $query = Log::oldest(); // ascending: log pertama di atas
+
+        if ($sessionId) {
+            $query->where('session_id', $sessionId);
+        }
+
+        return response()->json(['data' => $query->get()]);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'frequency' => 'required|string',
-            'ncs_1028' => 'required|string',
-            'keterangan' => 'nullable|string',
-            'zzd' => 'nullable|string|max:2',
-            'pencatat_ncs' => 'required|string',
+            'frequency'     => 'required|string',
+            'ncs_1028'      => 'required|string',
+            'keterangan'    => 'nullable|string',
+            'zzd'           => 'nullable|string|max:2',
+            'pencatat_ncs'  => 'required|string',
             'pencatat_nama' => 'nullable|string',
+            'session_id'    => 'required|string', 
         ]);
 
         DB::beginTransaction();
@@ -35,9 +43,9 @@ class LogController extends Controller
         try {
             $today = now()->toDateString();
 
-            // ✅ DUPLICATE CHECK
             $exists = Log::where('ncs_1028', $validated['ncs_1028'])
                 ->where('keterangan', $validated['keterangan'])
+                ->where('session_id', $validated['session_id'] ?? null)
                 ->whereDate('created_at', $today)
                 ->exists();
 
@@ -48,11 +56,9 @@ class LogController extends Controller
                 ], 422);
             }
 
-            // ✅ AUTO GET USER
             $user = User::where('ncs', $validated['ncs_1028'])->first();
             $validated['nama'] = $user ? $user->nama : null;
 
-            // ✅ AUTO ZZD
             $validated['zzd'] = $validated['zzd'] ?? substr($validated['ncs_1028'], 2, 2);
 
             $log = Log::create($validated);
@@ -68,40 +74,46 @@ class LogController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Log berhasil disimpan & menunggu approval',
-                'data' => $log
+                'data'    => $log
             ], 201);
         } catch (\Exception $e) {
             DB::rollBack();
-
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menyimpan log',
-                'error' => $e->getMessage()
+                'error'   => $e->getMessage()
             ], 500);
         }
     }
+
     public function destroy(Log $log)
     {
         $log->delete();
         return response()->json(['message' => 'Log deleted']);
     }
 
-    public function deleteAll()
+    public function deleteAll(Request $request)
     {
-       Log::query()->delete();
-        return response()->json(['message' => 'All logs deleted']);
+        $sessionId = $request->input('session_id');
+
+        if ($sessionId) {
+            Log::where('session_id', $sessionId)->delete();
+        } else {
+            Log::query()->delete();
+        }
+
+        return response()->json(['message' => 'Logs deleted']);
     }
 
     public function export(Request $request)
     {
-        $frequency = $request->input('frequency', '');
-        $keterangan = $request->input('keterangan', 'semua_data');
+        $keterangan   = $request->input('keterangan', 'semua_data');
+        $sessionId    = $request->input('session_id');
         $pencatat_ncs = $request->input('pencatat_ncs', '');
+        $date         = now()->format('Y-m-d');
+        $filename     = "{$date}-{$pencatat_ncs}-{$keterangan}.xlsx";
 
-        $date = now()->format('Y-m-d');
-        $filename = "{$date}-{$pencatat_ncs}-{$keterangan}.xlsx";
-
-        return Excel::download(new LogsExport($keterangan), $filename);
+        return Excel::download(new LogsExport($keterangan, $sessionId), $filename);
     }
 
     public function searchNcs(Request $request)
@@ -123,25 +135,24 @@ class LogController extends Controller
     public function bulkImport(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls,csv',
-            'frequency' => 'required|string',
-            'keterangan' => 'nullable|string',
-            'pencatat_ncs' => 'required|string',
+            'file'          => 'required|file|mimes:xlsx,xls,csv',
+            'frequency'     => 'required|string',
+            'keterangan'    => 'nullable|string',
+            'pencatat_ncs'  => 'required|string',
             'pencatat_nama' => 'nullable|string',
+            'session_id'    => 'required|string', // ← tambahan
         ]);
 
         DB::beginTransaction();
 
         try {
-            $rows = Excel::toArray([], $request->file('file'))[0];
-
-            $imported = 0;
-            $skipped = 0;
+            $rows      = Excel::toArray([], $request->file('file'))[0];
+            $imported  = 0;
+            $skipped   = 0;
             $duplicates = 0;
-            $today = now()->toDateString();
+            $today     = now()->toDateString();
 
-            foreach ($rows as $i => $row) {
-
+            foreach ($rows as $row) {
                 if (empty($row[0])) {
                     $skipped++;
                     continue;
@@ -149,9 +160,9 @@ class LogController extends Controller
 
                 $ncs = trim($row[0]);
 
-                // ✅ DUPLICATE CHECK
                 $exists = Log::where('ncs_1028', $ncs)
                     ->where('keterangan', $request->keterangan)
+                    ->where('session_id', $request->session_id ?? null)
                     ->whereDate('created_at', $today)
                     ->exists();
 
@@ -163,13 +174,14 @@ class LogController extends Controller
                 $user = User::where('ncs', $ncs)->first();
 
                 $data = [
-                    'frequency' => $request->frequency,
-                    'keterangan' => $request->keterangan,
-                    'ncs_1028' => $ncs,
-                    'nama' => $user ? $user->nama : null,
-                    'zzd' => substr($ncs, 2, 2),
-                    'pencatat_ncs' => $request->pencatat_ncs,
+                    'frequency'     => $request->frequency,
+                    'keterangan'    => $request->keterangan,
+                    'ncs_1028'      => $ncs,
+                    'nama'          => $user ? $user->nama : null,
+                    'zzd'           => substr($ncs, 2, 2),
+                    'pencatat_ncs'  => $request->pencatat_ncs,
                     'pencatat_nama' => $request->pencatat_nama,
+                    'session_id'    => $request->session_id, // ← tambahan
                 ];
 
                 $log = Log::create($data);
@@ -191,11 +203,10 @@ class LogController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-
             return response()->json([
                 'success' => false,
                 'message' => 'Import gagal',
-                'error' => $e->getMessage()
+                'error'   => $e->getMessage()
             ], 500);
         }
     }

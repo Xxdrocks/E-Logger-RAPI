@@ -128,7 +128,7 @@ function OperatorPage() {
             setWebsiteLocked(lock);
             showToast(res.data.message, 'bg-green-500');
             setShowLockModal(false);
-            fetchStats(); // refresh status lock
+            fetchStats();  
         } catch (error) {
             console.error('Toggle lock error:', error);
             showToast('Gagal toggle website lock', 'bg-red-500');
