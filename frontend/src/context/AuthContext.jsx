@@ -19,7 +19,7 @@ export function AuthProvider({ children }) {
 
     const fetchUser = async () => {
         try {
-            const res = await axios.get('http://127.0.0.1:8000/api/me');
+            const res = await axios.get('https://rumahrapi.com/backend/api/me');
             setUser(res.data);
         } catch (error) {
             console.error('Failed to fetch user:', error);
@@ -30,7 +30,7 @@ export function AuthProvider({ children }) {
     };
 
     const login = async (ncs) => {
-        const res = await axios.post('http://127.0.0.1:8000/api/login', { ncs });
+        const res = await axios.post('https://rumahrapi.com/backend/api/login', { ncs });
         const { user, token } = res.data;
         setUser(user);
         setToken(token);
@@ -39,7 +39,7 @@ export function AuthProvider({ children }) {
     };
 
     const register = async (ncs, nama) => {
-        const res = await axios.post('http://127.0.0.1:8000/api/register', { ncs, nama });
+        const res = await axios.post('https://rumahrapi.com/backend/api/register', { ncs, nama });
         const { user, token } = res.data;
         setUser(user);
         setToken(token);
@@ -49,7 +49,7 @@ export function AuthProvider({ children }) {
 
     const logout = async () => {
         try {
-            await axios.post('http://127.0.0.1:8000/api/logout');
+            await axios.post('https://rumahrapi.com/backend/api/logout');
         } catch (error) {
             console.error('Logout error:', error);
         }

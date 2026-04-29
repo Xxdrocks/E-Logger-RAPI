@@ -9,9 +9,12 @@ function LogTable({ logs = [], refresh, session }) {
     const [isProcessing, setIsProcessing] = useState(false);
     const [deletingId, setDeletingId] = useState(null);
 
-    useEffect(() => {
-        setDisplayedLogs(logs);
-    }, [logs]);
+   useEffect(() => {
+    const sorted = [...logs].sort((a, b) => {
+        return new Date(a.created_at) - new Date(b.created_at);
+    });
+    setDisplayedLogs(sorted);
+}, [logs]);
 
     const confirmDelete = (id) => {
         setTargetDeleteId(id);
@@ -23,7 +26,7 @@ function LogTable({ logs = [], refresh, session }) {
         setIsProcessing(true);
         setDeletingId(targetDeleteId);
         try {
-            await axios.delete(`http://127.0.0.1:8000/api/logs/${targetDeleteId}`);
+            await axios.delete(`https://rumahrapi.com/backend/api/logs/${targetDeleteId}`);
             setDisplayedLogs(prev => prev.filter(log => log.id !== targetDeleteId));
             showToast("Log berhasil dihapus", "success");
         } catch {
@@ -39,7 +42,7 @@ function LogTable({ logs = [], refresh, session }) {
     const handleDeleteAll = async () => {
         setIsProcessing(true);
         try {
-            await axios.post('http://127.0.0.1:8000/api/logs/delete-all');
+            await axios.post('https://rumahrapi.com/backend/api/logs/delete-all');
             setDisplayedLogs([]);
             if (refresh) await refresh();
             showToast("Semua log berhasil dihapus", "success");
@@ -71,7 +74,7 @@ function LogTable({ logs = [], refresh, session }) {
         const today = new Date();
         const fileName = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}-${pencatatNcs}-${ket}.xlsx`;
         try {
-            const response = await axios.post("http://127.0.0.1:8000/api/logs/export", {
+            const response = await axios.post("https://rumahrapi.com/backend/api/logs/export", {
                 keterangan: ket,
                 frequency: session?.frequency,
                 pencatat_ncs: pencatatNcs,

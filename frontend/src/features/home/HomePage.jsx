@@ -30,8 +30,8 @@ function HomePage() {
     const fetchStats = async () => {
         try {
             const [usersRes, logsRes] = await Promise.all([
-                axios.get('http://127.0.0.1:8000/api/users'),
-                axios.get('http://127.0.0.1:8000/api/logs'),
+                axios.get('https://rumahrapi.com/backend/api/users'),
+                axios.get('https://rumahrapi.com/backend/api/logs'),
             ]);
 
             const logs = logsRes.data.data || [];
@@ -52,7 +52,7 @@ function HomePage() {
 
     const fetchSchedules = async () => {
         try {
-            const res = await axios.get('http://127.0.0.1:8000/api/schedules');
+            const res = await axios.get('https://rumahrapi.com/backend/api/schedules');
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             
