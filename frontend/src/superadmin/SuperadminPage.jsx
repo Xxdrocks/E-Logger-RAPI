@@ -37,7 +37,7 @@ function SuperadminPanel() {
 
             if (error.response?.status === 403) {
                 showToast('Akses ditolak. Hanya superadmin yang bisa mengakses halaman ini.', 'error');
-                setTimeout(() => navigate('/dashboard/logger'), 2000);
+                setTimeout(() => navigate('/logger'), 2000);
             }
         } finally {
             setLoading(false);
@@ -245,7 +245,7 @@ function SuperadminPanel() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
                     <button
-                        onClick={() => navigate('/dashboard/operators')}
+                        onClick={() => navigate('/operators')}
                         className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border-2 border-purple-200 hover:border-purple-400 transition-all group"
                     >
                         <div className="flex items-center gap-4">
@@ -262,7 +262,7 @@ function SuperadminPanel() {
                     </button>
 
                     <button
-                        onClick={() => navigate('/dashboard/logger')}
+                        onClick={() => navigate('/logger')}
                         className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border-2 border-blue-200 hover:border-blue-400 transition-all group"
                     >
                         <div className="flex items-center gap-4">
@@ -279,7 +279,7 @@ function SuperadminPanel() {
                     </button>
 
                     <button
-                        onClick={() => navigate('/dashboard/schedule')}
+                        onClick={() => navigate('/schedule')}
                         className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border-2 border-orange-200 hover:border-orange-400 transition-all group"
                     >
                         <div className="flex items-center gap-4">

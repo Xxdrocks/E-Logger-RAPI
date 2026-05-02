@@ -200,6 +200,16 @@ function LogForm({ refresh, session, setSession, sessionDraft, setSessionDraft }
         }
     };
 
+    const handleSubmitOrBulk = async (e) => {
+        e.preventDefault();
+
+        if (bulkFile) {
+            await handleBulkImport();
+        } else {
+            await handleSubmit(e);
+        }
+    };
+
     // ✅ BULK IMPORT WITH SESSION_ID
     const handleBulkImport = async () => {
         if (!bulkFile || !session) {
@@ -469,25 +479,33 @@ function LogForm({ refresh, session, setSession, sessionDraft, setSessionDraft }
                             />
                         </div>
 
-                        <form onSubmit={handleSubmit} className="space-y-4 relative">
+                        <form onSubmit={handleSubmitOrBulk} className="space-y-4 relative">
                             {success && (
                                 <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-5 py-2 bg-green-500 text-white text-sm font-semibold rounded-full shadow-lg z-10">
                                     ✓ Log tersimpan!
                                 </div>
                             )}
 
-                            <div className="flex items-center gap-3 pb-3 border-b border-slate-200">
-                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-                                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                                    </svg>
-                                </div>
-                                <h3 className="text-sm font-bold text-slate-900">Input 10-28</h3>
-                            </div>
+                            <label
+                                htmlFor="bulkUpload"
+                                className="flex items-center gap-2 text-sm font-bold text-slate-700 "
+                            >
+                               
+
+                                {bulkFile ? `📄 ${bulkFile.name}` : 'Input 10-28'}
+                            </label>
+
+                            <input
+                                id="bulkUpload"
+                                type="file"
+                                accept=".xlsx,.xls,.csv"
+                                onChange={handleBulkFileChange}
+                                className="hidden"
+                            />
+
 
                             <div className="space-y-3">
                                 <div className="relative">
-                                    <label className="block text-xs font-bold text-slate-600 mb-2">10/28</label>
                                     <input
                                         placeholder="Ketik NCS → Enter"
                                         value={ncs}
@@ -528,25 +546,10 @@ function LogForm({ refresh, session, setSession, sessionDraft, setSessionDraft }
 
                                 <button
                                     type="submit"
-                                    disabled={loading || !ncs}
+                                    disabled={loading || (!ncs && !bulkFile)}
                                     className="w-full px-5 py-3 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-bold shadow-lg hover:shadow-xl disabled:opacity-50 transition-all flex items-center justify-center gap-2"
                                 >
-                                    {loading ? (
-                                        <>
-                                            <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                                                <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="4" strokeOpacity="0.25" />
-                                                <path fill="white" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                                            </svg>
-                                            Menyimpan...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                                            </svg>
-                                            Simpan Log
-                                        </>
-                                    )}
+                                    {loading ? 'Menyimpan...' : bulkFile ? 'Import 10-28' : 'Simpan Log'}
                                 </button>
                             </div>
                             {/* <div className="space-y-3">

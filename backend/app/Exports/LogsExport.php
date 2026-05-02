@@ -10,6 +10,7 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
 class LogsExport implements FromCollection, WithHeadings, WithMapping, WithStyles
 {
@@ -44,13 +45,11 @@ class LogsExport implements FromCollection, WithHeadings, WithMapping, WithStyle
             'NO',
             'TANGGAL',
             'FREKUENSI',
-            'NCS PENCATAT',
+            'NCS',
             '10-28',
             'WAKTU',
             'ZZD',
             'NAMA',
-            'KETERANGAN',
-            'STATUS'
         ];
     }
 
@@ -59,25 +58,33 @@ class LogsExport implements FromCollection, WithHeadings, WithMapping, WithStyle
         static $no = 0;
         $no++;
 
-        $status = $log->nama ? 'Terdaftar' : '10-28 Belum Terdaftar di Database';
+        // $status = $log->nama ? 'Terdaftar' : '10-28 Belum Terdaftar di Database';
         $nama = $log->nama ?: '-';
 
         return [
             $no,
-            $log->created_at->format('d F Y'),
+            \PhpOffice\PhpSpreadsheet\Shared\Date::dateTimeToExcel($log->created_at),
             $log->frequency,
             $log->pencatat_ncs ?? '-',
             $log->ncs_1028,
             $log->created_at->format('H:i:s'),
-            $log->zzd ?? '-',
+            $log->zzd ? (int) $log->zzd : '-',
             $nama,
-            $log->keterangan ?? '-',
-            $status
+
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
+
+        $sheet->getStyle('B2:B1000')
+            ->getNumberFormat()
+            ->setFormatCode(NumberFormat::FORMAT_DATE_DDMMYYYY);
+
+        foreach (range('A', 'H') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
         return [
             1 => [
                 'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],

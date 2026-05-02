@@ -608,7 +608,7 @@ function OperatorPage() {
                             <span className="hidden sm:inline">Import</span>
                         </button>
                         <a
-                            href="/dashboard"
+                            href="/logger"
                             className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white/80 backdrop-blur-sm border border-slate-200 text-slate-600 text-sm font-semibold hover:bg-white transition-all"
                         >
                             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">

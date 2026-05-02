@@ -11,7 +11,7 @@ function LogTable({ logs = [], refresh, session }) {
 
     useEffect(() => {
         const sorted = [...logs].sort((a, b) => {
-            return new Date(a.created_at) - new Date(b.created_at);
+            return new Date(b.created_at) - new Date(a.created_at);
         });
         setDisplayedLogs(sorted);
     }, [logs]);
@@ -78,7 +78,7 @@ function LogTable({ logs = [], refresh, session }) {
         const fileName = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}-${pencatatNcs}-${ket}.xlsx`;
         try {
             const response = await axios.post("https://rumahrapi.com/backend/api/logs/export", {
-                session_id : session?.sessionId,
+                session_id: session?.sessionId,
                 keterangan: ket,
                 frequency: session?.frequency,
                 pencatat_ncs: pencatatNcs,
@@ -101,7 +101,12 @@ function LogTable({ logs = [], refresh, session }) {
     const getInitials = (name = "") =>
         name.trim().split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2);
 
-    const columns = ["Freq", "10/28", "Waktu", "Nama", "ZZD", "Aksi"];
+    const columns = ["No", "10/28", "Waktu", "Nama", "ZZD", "Aksi"];
+
+    const formatZZD = (zzd) => {
+        if (!zzd) return '-';
+        return String(parseInt(zzd, 10));
+    };
 
     return (
         <div className="bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-xl overflow-hidden">
@@ -218,7 +223,7 @@ function LogTable({ logs = [], refresh, session }) {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-50">
-                            {displayedLogs.map(log => (
+                            {displayedLogs.map((log, index) => (
                                 <tr
                                     key={log.id}
                                     className={`group hover:bg-slate-50/60 transition-colors ${deletingId === log.id ? "opacity-40 pointer-events-none" : ""
@@ -226,7 +231,7 @@ function LogTable({ logs = [], refresh, session }) {
                                 >
                                     <td className="px-5 py-3.5">
                                         <span className="inline-block px-2 py-0.5 rounded-md bg-indigo-50 text-xs font-mono font-medium">
-                                            {log.frequency}
+                                            {index + 1}
                                         </span>
                                     </td>
                                     <td className="px-5 py-3.5 font-mono text-xs text-slate-600">
@@ -242,7 +247,7 @@ function LogTable({ logs = [], refresh, session }) {
                                         </div>
                                     </td>
                                     <td className="px-5 py-3.5 font-mono text-xs font-medium text-slate-700">
-                                        {log.zzd}
+                                        {formatZZD(log.zzd)}
                                     </td>
                                     <td className="px-5 py-3.5">
                                         <button
@@ -259,7 +264,7 @@ function LogTable({ logs = [], refresh, session }) {
                 )}
             </div>
         </div>
-        
+
     );
 }
 

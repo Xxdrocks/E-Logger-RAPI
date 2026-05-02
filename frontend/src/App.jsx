@@ -14,31 +14,25 @@ import ContactPage from './features/contact/ContactPage';
 import PointPage from './features/points/PointsPage';
 import SuperadminPanel from './superadmin/SuperadminPage';
 import LandingPage from './features/Landing/LandingPage';
- 
+
 function App() {
     return (
         <AuthProvider>
             <BrowserRouter>
                 <Routes>
-                    {/* Public Routes */}
-                    <Route path="/" element={<Navigate to="/login" replace />} />
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/register" element={<RegisterPage />} />
 
-                    {/* Protected Dashboard Routes */}
-                    <Route 
-                        path="/dashboard/*" 
-                        element={
-                            <ProtectedRoute>
-                                <DashboardLayout />
-                            </ProtectedRoute>
-                        } 
-                    />
+                    <Route path="/" element={<Navigate to="/logger" replace />} />
+
+                    <Route path="/login" element={<LoginPage />} />
+
+                    <Route path="/*" element={<DashboardLayout />} />
+
                 </Routes>
             </BrowserRouter>
         </AuthProvider>
     );
 }
+
 
 function DashboardLayout() {
     return (
@@ -46,8 +40,7 @@ function DashboardLayout() {
             <Navbar />
             <main className="flex-1">
                 <Routes>
-                    <Route path="/" element={<Navigate to="/logger" replace />} />
-                    
+
                     <Route path="/logger" element={<LogPage />} />
                     <Route path="/schedule" element={<SchedulePage />} />
                     <Route path="/points" element={<PointPage />} />
@@ -69,6 +62,7 @@ function DashboardLayout() {
                             </ProtectedRoute>
                         }
                     />
+
                 </Routes>
             </main>
             <Footer />
@@ -76,16 +70,16 @@ function DashboardLayout() {
     );
 }
 //   return (
-   
+
 //     <AuthProvider>
 //       <BrowserRouter>
 //         <Routes>
-          
+
 //           <Route path="/" element={<LandingPage />} />
 //           <Route path="/login" element={<LoginPage />} />
 //           <Route path="/register" element={<RegisterPage />} />
- 
-      
+
+
 //           <Route
 //             path="/dashboard/*"
 //             element={
@@ -99,7 +93,7 @@ function DashboardLayout() {
 //     </AuthProvider>
 //   );
 // }
- 
+
 // function DashboardLayout() {
 //   return (
 //     <div className="min-h-screen flex flex-col">
@@ -110,7 +104,7 @@ function DashboardLayout() {
 //           <Route path="/logger" element={<LogPage />} />
 //           <Route path="/schedule" element={<SchedulePage />} />
 //           <Route path="/points" element={<PointPage />} />
-          
+
 //           <Route
 //             path="/operators"
 //             element={
@@ -119,7 +113,7 @@ function DashboardLayout() {
 //               </ProtectedRoute>
 //             }
 //           />
-          
+
 //           <Route
 //             path="/superadmin"
 //             element={

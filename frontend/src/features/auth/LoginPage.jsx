@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
@@ -6,8 +6,20 @@ function LoginPage() {
     const [ncs, setNcs] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-    const { login } = useAuth();
     const navigate = useNavigate();
+    const { login, user } = useAuth();
+
+    useEffect(() => {
+        if (user) {
+            if (user.role === 'superadmin') {
+                navigate('/superadmin');
+            } else if (user.role === 'admin') {
+                navigate('/operators');
+            } else {
+                navigate('/logger');
+            }
+        }
+    }, [user, navigate]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -16,7 +28,6 @@ function LoginPage() {
 
         try {
             await login(ncs);
-            navigate('/dashboard/logger');
         } catch (err) {
             setError(err.response?.data?.errors?.ncs?.[0] || 'NCS tidak ditemukan');
         } finally {
@@ -58,7 +69,7 @@ function LoginPage() {
                         </div>
 
                         <button
-                            type='disable'
+                            type='submit'
                             disabled={loading}
                             className="w-full py-3 rounded-xl bg-gradient-to-r from-primary to-secondary text-white font-semibold hover:shadow-lg transition-all duration-200 disabled:opacity-50"
                         >
@@ -66,7 +77,7 @@ function LoginPage() {
                         </button>
                     </form>
 
-                   {/* <div className="mt-6 text-center">
+                    {/* <div className="mt-6 text-center">
                         <p className="text-sm text-slate-600">
                             NCS belum terdaftar?{' '}
                             <Link to="/register" className="text-primary font-semibold hover:text-primary-hover">
