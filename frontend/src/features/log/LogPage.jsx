@@ -27,8 +27,7 @@ function LogPage() {
                 const parsed = JSON.parse(saved);
 
                 if (parsed?.sessionId) {
-                    setSession(null);         
-                    // setSessionDraft(parsed);  
+                    setSession(parsed);         
                 }
             } catch {
                 localStorage.removeItem("active_session");
@@ -67,12 +66,15 @@ function LogPage() {
         }
     };
 
-    useEffect(() => {
-        if (!session?.sessionId) return;
+   useEffect(() => {
+    if (!session?.sessionId) {
+        setLogs([]);
+        setLoading(false); 
+        return;
+    }
 
-        fetchLogs();
-    }, [session]);
-
+    fetchLogs();
+}, [session]);
     useEffect(() => {
         console.log("SESSION RESTORED:", session);
     }, [session]);
@@ -116,8 +118,8 @@ function LogPage() {
             <div className="relative z-10 max-w-6xl mx-auto px-3 md:px-6 py-6 md:py-10">
                 <header className="mb-6 md:mb-10">
                     <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between md:gap-5">
-                        <div className="flex items-center gap-3 md:gap-4">
-                            <img src="/images/logo-rapi.png" alt="Logo" className="w-16 md:w-20" />
+                        <div className="flex justify-center items-center gap-3 md:gap-4">
+                            <img src="/images/logo-rapi.png" alt="Logo" className="w-52 md:w-20" />
                         </div>
                         <div className="flex flex-col items-start md:items-end gap-1.5">
                             <div className="flex items-center gap-2 bg-white/80 border border-primary/30 rounded-xl px-3 md:px-4 py-2 shadow-sm backdrop-blur-sm">
@@ -173,6 +175,8 @@ function LogPage() {
                     </>
                 )}
             </div>
+
+            
         </div>
     );
 }

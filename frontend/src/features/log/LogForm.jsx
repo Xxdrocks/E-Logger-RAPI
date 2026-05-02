@@ -260,7 +260,7 @@ function LogForm({ refresh, session, setSession, sessionDraft, setSessionDraft }
     return (
         <div className="bg-white/75 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-xl">
             {toast && (
-                <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[999] px-5 py-2.5 rounded-full shadow-lg text-white text-sm font-semibold ${toast.type === 'error' ? 'bg-red-500' : 'bg-primary'
+                <div className={`fixed top-80 left-1/2 -translate-x-1/2 z-[999] px-5 py-2.5 rounded-full shadow-lg text-white text-sm font-semibold ${toast.type === 'error' ? 'bg-red-500' : 'bg-primary'
                     }`}>
                     {toast.message}
                 </div>
@@ -482,7 +482,7 @@ function LogForm({ refresh, session, setSession, sessionDraft, setSessionDraft }
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                                     </svg>
                                 </div>
-                                <h3 className="text-sm font-bold text-slate-900">Input NCS</h3>
+                                <h3 className="text-sm font-bold text-slate-900">Input 10-28</h3>
                             </div>
 
                             <div className="space-y-3">
@@ -549,7 +549,7 @@ function LogForm({ refresh, session, setSession, sessionDraft, setSessionDraft }
                                     )}
                                 </button>
                             </div>
-                            <div className="space-y-3">
+                            {/* <div className="space-y-3">
                                 <label className="flex items-center gap-2 text-sm font-bold text-slate-700">
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
@@ -574,7 +574,7 @@ function LogForm({ refresh, session, setSession, sessionDraft, setSessionDraft }
                                 >
                                     {bulkImporting ? 'Importing...' : 'Import Sekarang'}
                                 </button>
-                            </div>
+                            </div> */}
                         </form>
                     </div>
                 </>

@@ -35,7 +35,7 @@ class LogController extends Controller
             'zzd'           => 'nullable|string|max:2',
             'pencatat_ncs'  => 'required|string',
             'pencatat_nama' => 'nullable|string',
-            'session_id'    => 'required|string', 
+            'session_id'    => 'required|string',
         ]);
 
         DB::beginTransaction();
@@ -94,15 +94,17 @@ class LogController extends Controller
 
     public function deleteAll(Request $request)
     {
+        $request->validate([
+            'session_id' => 'required|string',
+        ]);
+
         $sessionId = $request->input('session_id');
 
-        if ($sessionId) {
-            Log::where('session_id', $sessionId)->delete();
-        } else {
-            Log::query()->delete();
-        }
+        Log::where('session_id', $sessionId)->delete();
 
-        return response()->json(['message' => 'Logs deleted']);
+        return response()->json([
+            'message' => 'Logs deleted for session only'
+        ]);
     }
 
     public function export(Request $request)

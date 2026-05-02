@@ -32,6 +32,7 @@ export function AuthProvider({ children }) {
     const login = async (ncs) => {
         const res = await axios.post('https://rumahrapi.com/backend/api/login', { ncs });
         const { user, token } = res.data;
+        localStorage.removeItem("active_session");
         setUser(user);
         setToken(token);
         localStorage.setItem('token', token);
@@ -56,6 +57,7 @@ export function AuthProvider({ children }) {
         setUser(null);
         setToken(null);
         localStorage.removeItem('token');
+        localStorage.removeItem('active_session');
         delete axios.defaults.headers.common['Authorization'];
     };
 
@@ -64,15 +66,15 @@ export function AuthProvider({ children }) {
     const isMember = () => user?.role === 'member';
 
     return (
-        <AuthContext.Provider value={{ 
-            user, 
-            login, 
-            register, 
-            logout, 
-            isAdmin, 
+        <AuthContext.Provider value={{
+            user,
+            login,
+            register,
+            logout,
+            isAdmin,
             isSuperadmin,
-            isMember, 
-            loading 
+            isMember,
+            loading
         }}>
             {children}
         </AuthContext.Provider>

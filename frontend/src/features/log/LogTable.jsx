@@ -42,7 +42,11 @@ function LogTable({ logs = [], refresh, session }) {
     const handleDeleteAll = async () => {
         setIsProcessing(true);
         try {
-            await axios.post('https://rumahrapi.com/backend/api/logs/delete-all');
+            await axios.post('https://rumahrapi.com/backend/api/logs/delete-all',
+                {
+                    session_id: session.sessionId
+                }
+            );
             setDisplayedLogs([]);
             if (refresh) await refresh();
             showToast("Semua log berhasil dihapus", "success");
@@ -255,6 +259,7 @@ function LogTable({ logs = [], refresh, session }) {
                 )}
             </div>
         </div>
+        
     );
 }
 

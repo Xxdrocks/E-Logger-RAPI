@@ -28,7 +28,7 @@ function LoginPage() {
         <div className="min-h-screen bg-gradient-to-br from-primary-light via-secondary-light to-accent-light flex items-center justify-center px-4">
             <div className="max-w-md w-full">
                 <div className="text-center mb-8">
-                    <img src="/images/logo-rapi.png" alt="Logo RAPI" className="w-32 mx-auto mb-4" />
+                    <img src="/images/logo-rapi.png" alt="Logo RAPI" className="w-52 mx-auto mb-4" />
                     <h1 className="text-3xl font-bold text-slate-900 mb-2">Selamat Datang</h1>
                     <p className="text-slate-600">Login ke sistem E-Logger RAPI</p>
                 </div>
