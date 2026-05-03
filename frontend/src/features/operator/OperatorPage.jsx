@@ -634,9 +634,9 @@ function OperatorPage() {
                             </div>
                         </div>
 
-                        <div className="overflow-x-auto">
+                        <div className="overflow-y-auto max-h-64 ">
                             <table className="w-full text-sm">
-                                <thead>
+                                <thead className='sticky top-0 z-10'>
                                     <tr className="bg-amber-50 border-b border-amber-100">
                                         <th className="px-5 py-3.5 text-left text-xs font-bold text-amber-800 uppercase tracking-wide">No</th>
                                         <th className="px-5 py-3.5 text-left text-xs font-bold text-amber-800 uppercase tracking-wide">Tanggal</th>
@@ -718,7 +718,7 @@ function OperatorPage() {
                                     NCS
                                 </label>
                                 <input
-                                    placeholder="JZ09VAG"
+                                    placeholder="Masukan 10-28"
                                     value={form.ncs}
                                     onChange={(e) => setForm({ ...form, ncs: e.target.value.toUpperCase() })}
                                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-slate-800 text-sm placeholder:text-slate-300 outline-none transition-all uppercase focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary-light"
@@ -730,7 +730,7 @@ function OperatorPage() {
                                     Nama Operator
                                 </label>
                                 <input
-                                    placeholder="Ahmad Fauzi"
+                                    placeholder="MASUKAN NAMA OPERATOR"
                                     value={form.nama}
                                     onChange={(e) => setForm({ ...form, nama: e.target.value })}
                                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50/80 text-slate-800 text-sm placeholder:text-slate-300 outline-none transition-all focus:border-primary focus:bg-white focus:ring-2 focus:ring-primary-light"
