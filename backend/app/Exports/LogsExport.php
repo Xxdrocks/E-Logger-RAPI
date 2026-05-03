@@ -44,7 +44,6 @@ class LogsExport implements FromCollection, WithHeadings, WithMapping, WithStyle
         return [
             'NO',
             'TANGGAL',
-            'FREKUENSI',
             'NCS',
             '10-28',
             'WAKTU',
@@ -58,13 +57,13 @@ class LogsExport implements FromCollection, WithHeadings, WithMapping, WithStyle
         static $no = 0;
         $no++;
 
-        // $status = $log->nama ? 'Terdaftar' : '10-28 Belum Terdaftar di Database';
         $nama = $log->nama ?: '-';
 
         return [
             $no,
-            \PhpOffice\PhpSpreadsheet\Shared\Date::dateTimeToExcel($log->created_at),
-            $log->frequency,
+            \PhpOffice\PhpSpreadsheet\Shared\Date::dateTimeToExcel(
+                $log->created_at->startOfDay()
+            ),
             $log->pencatat_ncs ?? '-',
             $log->ncs_1028,
             $log->created_at->format('H:i:s'),
@@ -79,7 +78,7 @@ class LogsExport implements FromCollection, WithHeadings, WithMapping, WithStyle
 
         $sheet->getStyle('B2:B1000')
             ->getNumberFormat()
-            ->setFormatCode(NumberFormat::FORMAT_DATE_DDMMYYYY);
+            ->setFormatCode('[$-id-ID]d mmmm yyyy');
 
         foreach (range('A', 'H') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);

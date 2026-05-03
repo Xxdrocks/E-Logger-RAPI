@@ -12,7 +12,7 @@ function PointPage() {
     const fetchLeaderboard = async (filterType = 'all') => {
         setLoading(true);
         try {
-            const res = await axios.get(`https://rumahrapi.com/backend/api/points/leaderboard?filter=${filterType}`);
+            const res = await axios.get(`http://127.0.0.1:8000/api/points/leaderboard?filter=${filterType}`);
             setLeaderboard(res.data);
         } catch (error) {
             console.error('Error fetching leaderboard:', error);
@@ -24,7 +24,7 @@ function PointPage() {
     const fetchUserDetail = async (ncs) => {
         setLoadingDetail(true);
         try {
-            const res = await axios.get(`https://rumahrapi.com/backend/api/points/user/${ncs}?filter=${filter}`);
+            const res = await axios.get(`http://127.0.0.1:8000/api/points/user/${ncs}?filter=${filter}`);
             setUserDetail(res.data);
         } catch (error) {
             console.error('Error fetching user detail:', error);
