@@ -26,7 +26,7 @@ function LogTable({ logs = [], refresh, session }) {
         setIsProcessing(true);
         setDeletingId(targetDeleteId);
         try {
-            await axios.delete(`http://127.0.0.1:8000/api/logs/${targetDeleteId}`);
+            await axios.delete(`https://rumahrapi.com/backend/api/logs/${targetDeleteId}`);
             setDisplayedLogs(prev => prev.filter(log => log.id !== targetDeleteId));
             showToast("Log berhasil dihapus", "success");
         } catch {
@@ -42,7 +42,7 @@ function LogTable({ logs = [], refresh, session }) {
     const handleDeleteAll = async () => {
         setIsProcessing(true);
         try {
-            await axios.post('http://127.0.0.1:8000/api/logs/delete-all',
+            await axios.post('https://rumahrapi.com/backend/api/logs/delete-all',
                 {
                     session_id: session.sessionId
                 }
@@ -77,7 +77,7 @@ function LogTable({ logs = [], refresh, session }) {
         const today = new Date();
         const fileName = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}-${pencatatNcs}-${ket}.xlsx`;
         try {
-            const response = await axios.post("http://127.0.0.1:8000/api/logs/export", {
+            const response = await axios.post("https://rumahrapi.com/backend/api/logs/export", {
                 session_id: session?.sessionId,
                 keterangan: ket,
                 frequency: session?.frequency,
@@ -231,7 +231,7 @@ function LogTable({ logs = [], refresh, session }) {
                                 >
                                     <td className="px-5 py-3.5">
                                         <span className="inline-block px-2 py-0.5 rounded-md bg-indigo-50 text-xs font-mono font-medium">
-                                            {index + 1}
+                                            {displayedLogs.length - index}
                                         </span>
                                     </td>
                                     <td className="px-5 py-3.5 font-mono text-xs text-slate-600">

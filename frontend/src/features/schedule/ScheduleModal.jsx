@@ -38,7 +38,7 @@ function ScheduleModal({ schedule, onClose, onSave }) {
 
         if (value.length >= 2) {
             try {
-                const res = await axios.get(`http://127.0.0.1:8000/api/logs/search-ncs?q=${value}`);
+                const res = await axios.get(`https://rumahrapi.com/backend/api/logs/search-ncs?q=${value}`);
                 setPencatatSuggestions(res.data);
                 setShowPencatatSuggestions(true);
             } catch (err) {
@@ -71,11 +71,11 @@ function ScheduleModal({ schedule, onClose, onSave }) {
             };
 
             if (schedule) {
-                await axios.put(`http://127.0.0.1:8000/api/schedules/${schedule.id}`, payload, {
+                await axios.put(`https://rumahrapi.com/backend/api/schedules/${schedule.id}`, payload, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
             } else {
-                await axios.post('http://127.0.0.1:8000/api/schedules', payload, {
+                await axios.post('https://rumahrapi.com/backend/api/schedules', payload, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
             }
