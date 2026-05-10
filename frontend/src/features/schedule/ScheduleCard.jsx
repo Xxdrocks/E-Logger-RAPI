@@ -10,7 +10,7 @@ function ScheduleCard({ schedule, onEdit, onDelete }) {
 
     const { day, month } = formatDate(schedule.event_date);
     const imageUrl = schedule.image 
-        ? `https://rumahrapi.com/backend/storage/${schedule.image}`
+        ? `https://https://rumahrapi.com/backend/storage/${schedule.image}`
         : '/images/default-event.jpg';
 
     const colors = [
@@ -67,16 +67,13 @@ function ScheduleCard({ schedule, onEdit, onDelete }) {
                 </div>
             </div>
 
-            {/* Mobile Layout */}
             <div className="md:hidden">
                 <div className="flex">
-                    {/* Date Box - Smaller on Mobile */}
                     <div className={`w-20 flex-shrink-0 bg-gradient-to-br ${colors[colorIndex]} flex flex-col items-center justify-center text-white`}>
                         <p className="text-3xl font-bold leading-none">{day}</p>
                         <p className="text-xs font-semibold tracking-wider">{month}</p>
                     </div>
 
-                    {/* Image - Smaller on Mobile */}
                     <div className="w-24 flex-shrink-0">
                         <img 
                             src={imageUrl} 
@@ -85,7 +82,6 @@ function ScheduleCard({ schedule, onEdit, onDelete }) {
                         />
                     </div>
 
-                    {/* Content */}
                     <div className="flex-1 p-3">
                         <h3 className="text-sm font-bold text-slate-800 mb-1 line-clamp-1">{schedule.title}</h3>
                         <p className="text-xs text-slate-500 mb-1 line-clamp-1">{schedule.location || 'Lokasi belum ditentukan'}</p>
@@ -98,7 +94,6 @@ function ScheduleCard({ schedule, onEdit, onDelete }) {
                     </div>
                 </div>
 
-                {/* Buttons - Full Width on Mobile */}
                 <div className="flex gap-2 p-3 border-t border-slate-100">
                     <button
                         onClick={() => onEdit(schedule)}

@@ -112,7 +112,7 @@ class LogController extends Controller
         $keterangan   = $request->input('keterangan', 'semua_data');
         $sessionId    = $request->input('session_id');
         $pencatat_ncs = $request->input('pencatat_ncs', '');
-        $date         = now()->format('Y-m-d');
+        $date         = now()->format('d-m-Y');
         $filename     = "{$date}-{$pencatat_ncs}-{$keterangan}.xlsx";
 
         return Excel::download(new LogsExport($keterangan, $sessionId), $filename);

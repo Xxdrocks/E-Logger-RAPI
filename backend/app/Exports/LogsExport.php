@@ -10,7 +10,6 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 
 class LogsExport implements FromCollection, WithHeadings, WithMapping, WithStyles
 {
@@ -61,9 +60,7 @@ class LogsExport implements FromCollection, WithHeadings, WithMapping, WithStyle
 
         return [
             $no,
-            \PhpOffice\PhpSpreadsheet\Shared\Date::dateTimeToExcel(
-                $log->created_at->startOfDay()
-            ),
+            $log->created_at->format('d M Y'),
             $log->pencatat_ncs ?? '-',
             $log->ncs_1028,
             $log->created_at->format('H:i:s'),
@@ -76,11 +73,8 @@ class LogsExport implements FromCollection, WithHeadings, WithMapping, WithStyle
     public function styles(Worksheet $sheet)
     {
 
-        $sheet->getStyle('B2:B1000')
-            ->getNumberFormat()
-            ->setFormatCode('[$-id-ID]d mmmm yyyy');
 
-        foreach (range('A', 'H') as $col) {
+        foreach (range('A', 'G') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 

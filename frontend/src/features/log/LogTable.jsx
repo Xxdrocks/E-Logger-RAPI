@@ -75,7 +75,7 @@ function LogTable({ logs = [], refresh, session }) {
         const pencatatNcs = session?.pencatat_ncs || "";
         const token = localStorage.getItem("token");
         const today = new Date();
-        const fileName = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}-${pencatatNcs}-${ket}.xlsx`;
+        const fileName = `${String(today.getDate()).padStart(2, "0")}-${String(today.getMonth() + 1).padStart(2, "0")}-${today.getFullYear()}-${pencatatNcs}-${ket}.xlsx`;
         try {
             const response = await axios.post("https://rumahrapi.com/backend/api/logs/export", {
                 session_id: session?.sessionId,
@@ -111,7 +111,6 @@ function LogTable({ logs = [], refresh, session }) {
     return (
         <div className="bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-xl overflow-hidden">
 
-            {/* Delete Single Modal */}
             {showDeleteModal && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
                     <div className="bg-white rounded-2xl p-6 w-full max-w-xs border border-slate-100 shadow-md">
@@ -143,7 +142,6 @@ function LogTable({ logs = [], refresh, session }) {
                 </div>
             )}
 
-            {/* Clear All Modal */}
             {showDeleteAllModal && (
                 <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
                     <div className="bg-white rounded-2xl p-6 w-full max-w-xs border border-slate-100 shadow-md">
@@ -172,7 +170,6 @@ function LogTable({ logs = [], refresh, session }) {
                 </div>
             )}
 
-            {/* Header */}
             <div className="flex justify-between items-center px-6 py-4 border-b border-slate-100">
                 <div>
                     <h2 className="text-sm font-semibold text-slate-800">Riwayat Log</h2>
@@ -200,7 +197,6 @@ function LogTable({ logs = [], refresh, session }) {
                 </div>
             </div>
 
-            {/* Table */}
             <div className="overflow-x-auto">
                 {displayedLogs.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-16 gap-2">

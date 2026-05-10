@@ -111,7 +111,6 @@ function HomePage() {
                 </div>
             </div>
 
-            {/* Stats - Mobile Optimized */}
             <div className="bg-gradient-to-br from-primary-light via-secondary-light to-accent-light py-12 md:py-16 px-3 md:px-4">
                 <div className="max-w-7xl mx-auto">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-6">
@@ -125,7 +124,6 @@ function HomePage() {
                 </div>
             </div>
 
-            {/* Schedule Section */}
             <div className="bg-gradient-to-br from-secondary-light to-accent-light py-12 md:py-16 px-3 md:px-4">
                 <div className="max-w-7xl mx-auto">
                     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 md:gap-4 mb-6 md:mb-8">
@@ -148,7 +146,6 @@ function HomePage() {
                         </div>
                     ) : (
                         <>
-                            {/* Mobile Card View */}
                             <div className="md:hidden space-y-3">
                                 {schedules.map((schedule, idx) => (
                                     <div key={schedule.id} className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-md border border-slate-100">
@@ -185,7 +182,6 @@ function HomePage() {
                                 ))}
                             </div>
 
-                            {/* Desktop Table View */}
                             <div className="hidden md:block bg-white/70 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-xl overflow-hidden">
                                 <div className="overflow-x-auto">
                                     <table className="w-full text-sm">

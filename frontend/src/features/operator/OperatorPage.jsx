@@ -535,7 +535,6 @@ function OperatorPage() {
                 </div>
             )}
 
-            {/* BANNER WEBSITE TERKUNCI */}
             {websiteLocked && (
                 <div className="mx-4 sm:mx-6 mb-6 bg-gradient-to-r from-red-500 to-orange-500 text-white rounded-2xl p-6 shadow-xl">
                     <div className="flex items-center gap-4">
@@ -619,7 +618,6 @@ function OperatorPage() {
                     </div>
                 </div>
 
-                {/* APPROVAL TABLE */}
                 {approvals.length > 0 && (
                     <div className="bg-amber-50/70 backdrop-blur-md border-2 border-amber-300 rounded-2xl shadow-xl overflow-hidden mb-6">
                         <div className="flex items-center gap-3 px-7 py-5 bg-amber-100 border-b border-amber-200">

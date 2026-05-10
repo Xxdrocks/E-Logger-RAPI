@@ -249,23 +249,35 @@ function LogForm({ refresh, session, setSession, sessionDraft, setSessionDraft }
         }
     };
 
-    const handleNotesKeyDown = (e) => {
-        if (e.key === 'Enter') {
-            const cursorPos = e.target.selectionStart;
-            const currentLine = notes.substring(0, cursorPos).split('\n').pop();
+   const handleNotesKeyDown = (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
 
-            if (currentLine.trim().startsWith('-')) {
-                e.preventDefault();
-                const beforeCursor = notes.substring(0, cursorPos);
-                const afterCursor = notes.substring(cursorPos);
-                setNotes(beforeCursor + '\n- ' + afterCursor);
+        const textarea = e.target;
+        const cursorPos = textarea.selectionStart;
 
-                setTimeout(() => {
-                    e.target.selectionStart = e.target.selectionEnd = cursorPos + 3;
-                }, 0);
-            }
+        // Ambil semua text sebelum cursor
+        const beforeCursor = notes.substring(0, cursorPos);
+
+        // Ambil line terakhir
+        const currentLine = beforeCursor.split('\n').pop().trim();
+
+        // Kalau ada isi → kirim ke input 10-28
+        if (currentLine) {
+            setNcs(currentLine.toUpperCase());
         }
-    };
+
+        // Tambah line baru
+        const afterCursor = notes.substring(cursorPos);
+
+        setNotes(beforeCursor + '\n' + afterCursor);
+
+        // Pindahin cursor ke bawah
+        setTimeout(() => {
+            textarea.selectionStart = textarea.selectionEnd = cursorPos + 1;
+        }, 0);
+    }
+};
 
     return (
         <div className="bg-white/75 backdrop-blur-md border border-slate-200/80 rounded-2xl shadow-xl">
@@ -293,9 +305,7 @@ function LogForm({ refresh, session, setSession, sessionDraft, setSessionDraft }
                         </div>
                     </div>
 
-                    {/* REST OF FORM - SAME AS BEFORE */}
                     <form onSubmit={handleStartSession} className="space-y-4">
-                        {/* ... (frequency, keterangan, pencatat_ncs dropdowns same as original) ... */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="dropdown-container">
                                 <label className="block text-xs font-bold text-slate-600 mb-2">Frequency</label>
@@ -460,7 +470,6 @@ function LogForm({ refresh, session, setSession, sessionDraft, setSessionDraft }
                         </div>
                     </div>
 
-                    {/* REST OF COMPONENT - Notes + Input NCS + Submit - SAME AS ORIGINAL */}
                     <div className="p-5 md:p-7 space-y-6">
                         <div className="space-y-3">
                             <label className="flex items-center gap-2 text-sm font-bold text-slate-700">
